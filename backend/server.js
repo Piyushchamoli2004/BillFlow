@@ -22,7 +22,10 @@ app.use(helmet());
 
 // CORS: allow local development origins
 const allowedOrigins = process.env.NODE_ENV === 'production'
-    ? [process.env.FRONTEND_URL]
+    ? [
+        process.env.FRONTEND_URL,
+        'https://comfy-genie-f9a130.netlify.app'
+      ]
     : [
         'http://localhost:5500',
         'http://localhost:5501',
@@ -31,7 +34,8 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
         'http://127.0.0.1:5500',
         'http://127.0.0.1:5501',
         'http://127.0.0.1:5502',
-        'http://127.0.0.1:3000'
+        'http://127.0.0.1:3000',
+        'https://comfy-genie-f9a130.netlify.app'
     ];
 
 app.use(cors({
