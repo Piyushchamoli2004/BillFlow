@@ -1,0 +1,1758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Settings - BillFlow</title>
+    <link rel="stylesheet" href="dashboard-styles.css">
+    <link rel="stylesheet" href="notification-system.css">
+    <script src="api-connector.js"></script>
+    <style>
+        /* Linus UI Theme Variables */
+        :root {
+            --primary-color: #6C5CE7;
+            --accent-color: #A29BFE;
+            --bg-color: #F7F8FB;
+            --card-bg: #FFFFFF;
+            --text-dark: #2D3436;
+            --text-muted: #636E72;
+            --border-color: #E1E8ED;
+            --focus-ring: rgba(108, 92, 231, 0.2);
+            --sidebar-collapsed: 70px;
+            --sidebar-expanded: 260px;
+            --sidebar-bg: #F6F7FB;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg-color);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Hide default navbar */
+        .navbar {
+            display: none !important;
+        }
+
+        /* Unified Full-Height Sidebar - Linus UI Style */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: var(--sidebar-collapsed);
+            background: var(--sidebar-bg);
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.04);
+            transition: width 0.25s ease-in-out;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar.expanded {
+            width: var(--sidebar-expanded);
+        }
+
+        /* Sidebar Top Section - Logo + Hamburger */
+        .sidebar-header {
+            padding: 20px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(225, 232, 237, 0.5);
+            min-height: 70px;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            overflow: hidden;
+        }
+
+        .sidebar-logo svg {
+            flex-shrink: 0;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.25s ease-in-out;
+        }
+
+        .sidebar.expanded .logo-text {
+            opacity: 1;
+        }
+
+        .hamburger-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .hamburger-btn:hover {
+            background: rgba(108, 92, 231, 0.1);
+        }
+
+        .hamburger-btn svg {
+            color: var(--text-dark);
+        }
+
+        /* User Section in Sidebar */
+        .sidebar-user {
+            padding: 20px 16px;
+            border-bottom: 1px solid rgba(225, 232, 237, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .sidebar-user:hover {
+            background: rgba(108, 92, 231, 0.05);
+        }
+
+        .sidebar-user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .sidebar-user-info {
+            flex: 1;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.25s ease-in-out;
+        }
+
+        .sidebar.expanded .sidebar-user-info {
+            opacity: 1;
+        }
+
+        .sidebar-user-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar-user-role {
+            font-size: 12px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Main Content Adjustment */
+        .main-content {
+            margin-left: var(--sidebar-collapsed);
+            width: calc(100vw - var(--sidebar-collapsed));
+            transition: all 0.25s ease-in-out;
+            padding: 40px;
+            min-height: 100vh;
+        }
+
+        .sidebar.expanded ~ .main-content {
+            margin-left: var(--sidebar-expanded);
+            width: calc(100vw - var(--sidebar-expanded));
+        }
+
+        /* Hide default settings container */
+        .settings-container {
+            display: none;
+        }
+
+        /* Linus UI Profile Settings Container */
+        .profile-settings-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .profile-header {
+            margin-bottom: 32px;
+        }
+
+        .profile-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .profile-subtitle {
+            font-size: 15px;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        /* Main Profile Card - Linus UI Style */
+        .profile-card {
+            background: var(--card-bg);
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            padding: 48px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Profile Avatar Section - Linus UI */
+        .profile-avatar-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 40px;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .avatar-ring {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 24px rgba(108, 92, 231, 0.25);
+        }
+
+        .avatar-image {
+            width: 132px;
+            height: 132px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--primary-color);
+            overflow: hidden;
+        }
+
+        .avatar-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-upload-btn {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease-in-out;
+            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+        }
+
+        .avatar-upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
+        }
+
+        .avatar-upload-btn:active {
+            transform: translateY(0);
+        }
+
+        .avatar-size-text {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 12px;
+        }
+
+        /* Linus UI Form Grid */
+        .profile-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 28px;
+            margin-bottom: 32px;
+        }
+
+        /* Floating Label Input - Linus UI Style */
+        .input-group {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            letter-spacing: 0.2px;
+            text-transform: uppercase;
+        }
+
+        .input-group input,
+        .input-group select {
+            padding: 16px 18px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 15px;
+            color: var(--text-dark);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            transition: all 0.25s ease-in-out;
+            font-family: inherit;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px var(--focus-ring);
+            background: var(--card-bg);
+        }
+
+        .input-group input:disabled {
+            background: rgba(241, 243, 246, 0.6);
+            cursor: not-allowed;
+            color: var(--text-muted);
+        }
+
+        .input-group input::placeholder {
+            color: #B2BEC3;
+        }
+
+        /* Sidebar Navigation - Linus UI */
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 12px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .sidebar-nav::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: rgba(108, 92, 231, 0.2);
+            border-radius: 4px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 14px;
+            margin-bottom: 6px;
+            border-radius: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background: rgba(108, 92, 231, 0.08);
+            color: var(--primary-color);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.25);
+        }
+
+        .nav-icon {
+            flex-shrink: 0;
+            width: 22px;
+            height: 22px;
+        }
+
+        .nav-text {
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.25s ease-in-out;
+        }
+
+        .sidebar.expanded .nav-text {
+            opacity: 1;
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background: rgba(225, 232, 237, 0.5);
+            margin: 12px 0;
+        }
+
+        .nav-item-logout {
+            color: #e74c3c;
+        }
+
+        .nav-item-logout:hover {
+            background: rgba(231, 76, 60, 0.08);
+            color: #c0392b;
+        }
+
+        /* Action Buttons - Linus UI */
+        .form-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: flex-end;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease-in-out;
+            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1.5px solid var(--border-color);
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease-in-out;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: rgba(108, 92, 231, 0.05);
+        }
+
+        .avatar-info {
+            flex: 1;
+        }
+
+        .avatar-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .avatar-info p {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 12px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #f3f4f6;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            padding-top: 24px;
+            border-top: 2px solid #f3f4f6;
+        }
+
+        /* Settings Cards */
+        .settings-card {
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border: 2px solid #e5e7eb;
+        }
+
+        .settings-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .settings-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .settings-card-description {
+            font-size: 13px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 24px;
+            background: #d1d5db;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #667eea;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s;
+        }
+
+        .toggle-switch.active::after {
+            left: 26px;
+        }
+
+        /* Info Box */
+        .info-box {
+            padding: 16px;
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+
+        .info-box p {
+            font-size: 13px;
+            color: #1e40af;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            color: white;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* Success Message */
+        .success-message {
+            display: none;
+            padding: 16px;
+            background: #d1fae5;
+            color: #065f46;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            animation: slideDown 0.3s ease;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        /* Dropdown in Sidebar */
+        .user-dropdown {
+            display: none;
+            position: fixed;
+            left: calc(var(--sidebar-collapsed) + 8px);
+            top: 90px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            min-width: 220px;
+            z-index: 10000;
+            overflow: hidden;
+        }
+
+        .sidebar.expanded .user-dropdown {
+            left: calc(var(--sidebar-expanded) + 8px);
+        }
+
+        .user-dropdown.show {
+            display: block;
+            animation: dropdownFadeIn 0.2s ease-out;
+        }
+
+        @keyframes dropdownFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .dropdown-header-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .dropdown-header-email {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .dropdown-menu {
+            padding: 8px;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: var(--text-dark);
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(108, 92, 231, 0.08);
+        }
+
+        .dropdown-item svg {
+            width: 18px;
+            height: 18px;
+            color: var(--text-muted);
+        }
+
+        .dropdown-item.danger {
+            color: #e74c3c;
+        }
+
+        .dropdown-item.danger:hover {
+            background: rgba(231, 76, 60, 0.08);
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 8px 0;
+        }
+
+        /* Responsive Design - Linus UI */
+        @media (max-width: 968px) {
+            .profile-form-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                width: 100%;
+                margin-left: 0;
+                padding: 24px 20px;
+            }
+
+            .profile-card {
+                padding: 32px 24px;
+            }
+
+            .profile-title {
+                font-size: 26px;
+            }
+
+            .avatar-ring {
+                width: 110px;
+                height: 110px;
+            }
+
+            .avatar-image {
+                width: 102px;
+                height: 102px;
+                font-size: 38px;
+            }
+
+            .form-actions {
+                flex-direction: column-reverse;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+            }
+        }
+
+        /* Sidebar Overlay for Mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 999;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- Unified Full-Height Sidebar - Linus UI -->
+    <aside class="sidebar" id="sidebar">
+        <!-- Sidebar Header: Logo + Hamburger -->
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <rect width="32" height="32" rx="8" fill="url(#gradient)"/>
+                    <path d="M12 10h8M12 16h8M12 22h5" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <defs>
+                        <linearGradient id="gradient" x1="0" y1="0" x2="32" y2="32">
+                            <stop offset="0%" stop-color="#6C5CE7"/>
+                            <stop offset="100%" stop-color="#A29BFE"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span class="logo-text">BillFlow</span>
+            </div>
+            <button class="hamburger-btn" onclick="toggleSidebar(event)">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M3 5H17M3 10H17M3 15H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- User Section in Sidebar -->
+        <div class="sidebar-user" onclick="toggleUserDropdown(event)">
+            <div class="sidebar-user-avatar" id="sidebarAvatar">
+                <img src="data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='20' fill='%236C5CE7'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='Arial' font-size='16' font-weight='bold'%3EA%3C/text%3E%3C/svg%3E" alt="User">
+            </div>
+            <div class="sidebar-user-info">
+                <div class="sidebar-user-name" id="navUserName">Admin User</div>
+                <div class="sidebar-user-role" id="navUserRole">Administrator</div>
+            </div>
+        </div>
+
+        <!-- User Dropdown -->
+        <div class="user-dropdown" id="userDropdown">
+            <div class="dropdown-header">
+                <div class="dropdown-header-name" id="dropdownUserName">Admin User</div>
+                <div class="dropdown-header-email" id="dropdownUserEmail">admin@billflow.com</div>
+            </div>
+            <div class="dropdown-menu">
+                <a href="settings.html" class="dropdown-item">
+                    <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="6" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M4 16C4 13 6.5 11 10 11C13.5 11 16 13 16 16" stroke="currentColor" stroke-width="1.5"/></svg>
+                    <span>My Profile</span>
+                </a>
+                <a href="javascript:void(0)" class="dropdown-item" onclick="showComingSoon(event)">
+                    <svg viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 8H13M7 12H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    <span>Company Settings</span>
+                </a>
+                <a href="admin-dashboard.html" class="dropdown-item">
+                    <svg viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="11" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
+                    <span>Dashboard</span>
+                </a>
+                <div class="dropdown-divider"></div>
+                <a href="#" class="dropdown-item danger" onclick="handleLogout(event)">
+                    <svg viewBox="0 0 20 20" fill="none"><path d="M13 6L18 10L13 14M18 10H8M8 2H5C3.89543 2 3 2.89543 3 4V16C3 17.1046 3.89543 18 5 18H8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Navigation Items -->
+        <nav class="sidebar-nav">
+            <a href="admin-dashboard.html" class="nav-item">
+                <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none">
+                    <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                    <rect x="12" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                    <rect x="3" y="12" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                    <rect x="12" y="12" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                <span class="nav-text">Dashboard</span>
+            </a>
+            
+            <a href="generate-bill.html" class="nav-item">
+                <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none">
+                    <rect x="5" y="3" width="12" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M9 8H13M9 12H13M9 16H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span class="nav-text">Generate Bill</span>
+            </a>
+            
+            <a href="payment-history.html" class="nav-item">
+                <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none">
+                    <rect x="3" y="7" width="16" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M7 7V5C7 4 7.5 3 9 3H13C14.5 3 15 4 15 5V7" stroke="currentColor" stroke-width="1.5"/>
+                    <circle cx="11" cy="13" r="2" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                <span class="nav-text">Payment History</span>
+            </a>
+            
+            <a href="tenant-details.html" class="nav-item">
+                <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none">
+                    <circle cx="11" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M5 19C5 15 7.5 13 11 13C14.5 13 17 15 17 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span class="nav-text">Tenant Details</span>
+            </a>
+            
+            <a href="settings.html" class="nav-item active">
+                <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none">
+                    <circle cx="11" cy="11" r="3" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M11 3V5M11 17V19M19 11H17M5 11H3M16.5 5.5L15 7M7 15L5.5 16.5M16.5 16.5L15 15M7 7L5.5 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span class="nav-text">Settings</span>
+            </a>
+            
+            <div class="sidebar-divider"></div>
+            
+            <a href="#logout" class="nav-item nav-item-logout" onclick="handleLogout(event)">
+                <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none">
+                    <path d="M14 7L19 11L14 15M19 11H9M9 3H6C4.89543 3 4 3.89543 4 5V17C4 18.1046 4.89543 19 6 19H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span class="nav-text">Logout</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Linus UI Profile Settings -->
+        <div class="profile-settings-wrapper">
+            <!-- Header -->
+            <div class="profile-header">
+                <h1 class="profile-title">Profile Settings</h1>
+                <p class="profile-subtitle">Manage your personal information and preferences</p>
+            </div>
+
+            <!-- Main Profile Card -->
+            <div class="profile-card">
+                <!-- Avatar Section -->
+                <div class="profile-avatar-section">
+                    <div class="avatar-wrapper">
+                        <div class="avatar-ring">
+                            <div class="avatar-image" id="profileAvatar">
+                                <img src="data:image/svg+xml,%3Csvg width='132' height='132' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='66' cy='66' r='66' fill='%23F7F8FB'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%236C5CE7' font-family='Arial' font-size='48' font-weight='bold'%3EA%3C/text%3E%3C/svg%3E" alt="Profile">
+                            </div>
+                        </div>
+                    </div>
+                    <button class="avatar-upload-btn" onclick="document.getElementById('avatarInput').click()">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+                            <path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Upload Photo
+                    </button>
+                    <input type="file" id="avatarInput" accept="image/*" style="display: none;" onchange="handleAvatarUpload(event)">
+                    <p class="avatar-size-text">Maximum file size: 2MB</p>
+                </div>
+
+                <!-- Profile Form -->
+                <form class="profile-form-grid" id="profileForm">
+                    <div class="input-group">
+                        <label for="fullName">Full Name <span style="color: #e74c3c;">*</span></label>
+                        <input type="text" id="fullName" placeholder="Enter your full name" value="" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="email">Email Address <span style="color: #e74c3c;">*</span></label>
+                        <input type="email" id="email" placeholder="your.email@example.com" value="" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="propertyName">Property Name <span style="color: #e74c3c;">*</span></label>
+                        <input type="text" id="propertyName" placeholder="Enter property/building name" value="" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" placeholder="+1 (555) 000-0000" value="">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="propertyAddress">Property Address</label>
+                        <input type="text" id="propertyAddress" placeholder="Enter property address" value="">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="role">Role</label>
+                        <input type="text" id="role" value="" disabled>
+                    </div>
+                </form>
+
+                <!-- Action Buttons -->
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="resetForm()">Cancel</button>
+                    <button type="submit" class="btn-primary" onclick="saveProfile(event)">Save Changes</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden Old Settings Container -->
+        <div class="settings-container" style="display: none;">
+            <!-- Settings Navigation -->
+            <div class="settings-nav">
+                <div class="settings-nav-title">Settings</div>
+                <div class="settings-nav-item active" onclick="showSection('profile'); console.log('Clicked Profile');">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <circle cx="10" cy="6" r="3" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M4 16C4 13 6.5 11 10 11C13.5 11 16 13 16 16" stroke="currentColor" stroke-width="1.5"/>
+                    </svg>
+                    <span>Profile</span>
+                </div>
+                <div class="settings-nav-item" onclick="showSection('company'); console.log('Clicked Company');">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M7 8H13M7 12H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    <span>Company Info</span>
+                </div>
+                <div class="settings-nav-item" onclick="showSection('notifications')">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M10 3C7 3 5 5 5 8V11L3 14H17L15 11V8C15 5 13 3 10 3Z" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M8.5 17C8.5 17 8.5 18 10 18C11.5 18 11.5 17 11.5 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    <span>Notifications</span>
+                </div>
+                <div class="settings-nav-item" onclick="showSection('security')">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M10 2L4 5V9C4 13 6 16 10 18C14 16 16 13 16 9V5L10 2Z" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M7 10L9 12L13 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    <span>Security</span>
+                </div>
+                <div class="settings-nav-item" onclick="showSection('billing')">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <rect x="2" y="6" width="16" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M2 9H18M6 13H8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    <span>Billing Settings</span>
+                </div>
+            </div>
+
+            <!-- Settings Content -->
+            <div class="settings-content">
+                <div class="success-message" id="successMessage">
+                    ✓ Settings saved successfully!
+                </div>
+
+                <!-- Profile Section -->
+                <div class="settings-section active" id="profile-section">
+                    <div class="section-header">
+                        <h2 class="section-title">👤 Profile Settings</h2>
+                        <p class="section-subtitle">Manage your personal information and preferences</p>
+                    </div>
+
+                    <div class="avatar-upload-section">
+                        <div class="avatar-preview" id="avatarPreview">A</div>
+                        <div class="avatar-info">
+                            <h3>Profile Picture</h3>
+                            <p>PNG, JPG or GIF. Max size 2MB.</p>
+                            <input type="file" id="avatarInput" accept="image/*" style="display: none;" onchange="handleAvatarUpload(event)">
+                            <button class="btn btn-secondary" onclick="document.getElementById('avatarInput').click()">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                </svg>
+                                Upload Photo
+                            </button>
+                        </div>
+                    </div>
+
+                    <form onsubmit="saveProfile(event)">
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <label>Full Name *</label>
+                                <input type="text" id="fullName" value="Admin User" required>
+                            </div>
+                            <div class="form-field">
+                                <label>Email Address *</label>
+                                <input type="email" id="email" value="admin@billflow.com" required>
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <label>Phone Number</label>
+                                <input type="tel" id="phone" value="+1 234 567 8900">
+                            </div>
+                            <div class="form-field">
+                                <label>Role</label>
+                                <input type="text" value="Administrator" disabled>
+                            </div>
+                        </div>
+
+                        <div class="form-grid single-column">
+                            <div class="form-field">
+                                <label>Bio</label>
+                                <textarea id="bio" placeholder="Tell us about yourself...">Managing tenant billing and payments efficiently.</textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <path d="M3 8L6 11L13 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                </svg>
+                                Save Changes
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="resetForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Company Info Section -->
+                <div class="settings-section" id="company-section">
+                    <div class="section-header">
+                        <h2 class="section-title">🏢 Company Information</h2>
+                        <p class="section-subtitle">Update your company details for bills and invoices</p>
+                    </div>
+
+                    <form onsubmit="saveCompanyInfo(event)">
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <label>Company Name *</label>
+                                <input type="text" id="companyName" value="BillFlow Properties" required>
+                            </div>
+                            <div class="form-field">
+                                <label>Registration Number</label>
+                                <input type="text" id="regNumber" value="REG-2024-12345">
+                            </div>
+                        </div>
+
+                        <div class="form-grid single-column">
+                            <div class="form-field">
+                                <label>Address *</label>
+                                <textarea id="companyAddress" required>123 Main Street, Suite 100
+New York, NY 10001
+United States</textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <label>Company Email</label>
+                                <input type="email" id="companyEmail" value="info@billflow.com">
+                            </div>
+                            <div class="form-field">
+                                <label>Company Phone</label>
+                                <input type="tel" id="companyPhone" value="+1 800 555 1234">
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <label>Tax ID / VAT Number</label>
+                                <input type="text" id="taxId" value="TAX-123456789">
+                            </div>
+                            <div class="form-field">
+                                <label>Website</label>
+                                <input type="url" id="website" value="https://billflow.com">
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <path d="M3 8L6 11L13 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                </svg>
+                                Save Company Info
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Notifications Section -->
+                <div class="settings-section" id="notifications-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Notification Preferences</h2>
+                        <p class="section-subtitle">Choose what notifications you want to receive</p>
+                    </div>
+
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <div>
+                                <div class="settings-card-title">Payment Notifications</div>
+                                <div class="settings-card-description">Get notified when tenants make payments</div>
+                            </div>
+                            <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <div>
+                                <div class="settings-card-title">Overdue Reminders</div>
+                                <div class="settings-card-description">Receive alerts for overdue payments</div>
+                            </div>
+                            <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <div>
+                                <div class="settings-card-title">New Tenant Alerts</div>
+                                <div class="settings-card-description">Get notified when new tenants are added</div>
+                            </div>
+                            <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <div>
+                                <div class="settings-card-title">Bill Generation Reminders</div>
+                                <div class="settings-card-description">Monthly reminders to generate bills</div>
+                            </div>
+                            <div class="toggle-switch" onclick="toggleSwitch(this)"></div>
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <div>
+                                <div class="settings-card-title">Email Notifications</div>
+                                <div class="settings-card-description">Receive notifications via email</div>
+                            </div>
+                            <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn btn-primary" onclick="saveNotifications()">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M3 8L6 11L13 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                            Save Preferences
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Security Section -->
+                <div class="settings-section" id="security-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Security Settings</h2>
+                        <p class="section-subtitle">Manage your password and security preferences</p>
+                    </div>
+
+                    <div class="info-box">
+                        <p><strong>Password Requirements:</strong> Use at least 8 characters with a mix of uppercase, lowercase, numbers, and symbols for better security.</p>
+                    </div>
+
+                    <form onsubmit="changePassword(event)">
+                        <div class="form-grid single-column">
+                            <div class="form-field">
+                                <label>Current Password *</label>
+                                <input type="password" id="currentPassword" required>
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <label>New Password *</label>
+                                <input type="password" id="newPassword" minlength="8" required>
+                            </div>
+                            <div class="form-field">
+                                <label>Confirm New Password *</label>
+                                <input type="password" id="confirmPassword" minlength="8" required>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <path d="M8 3V5M3 8H5M11 8H13M8 11V13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                    <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.5"/>
+                                </svg>
+                                Change Password
+                            </button>
+                        </div>
+                    </form>
+
+                    <div style="margin-top: 32px; padding-top: 32px; border-top: 2px solid #f3f4f6;">
+                        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">Two-Factor Authentication</h3>
+                        <div class="settings-card">
+                            <div class="settings-card-header">
+                                <div>
+                                    <div class="settings-card-title">Enable 2FA</div>
+                                    <div class="settings-card-description">Add an extra layer of security to your account</div>
+                                </div>
+                                <div class="toggle-switch" onclick="toggleSwitch(this)"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Billing Settings Section -->
+                <div class="settings-section" id="billing-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Billing Settings</h2>
+                        <p class="section-subtitle">Configure default billing parameters and preferences</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalTenants">0</div>
+                            <div class="stat-label">Total Tenants</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalBills">0</div>
+                            <div class="stat-label">Bills Generated</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalRevenue">$0</div>
+                            <div class="stat-label">Total Revenue</div>
+                        </div>
+                    </div>
+
+                    <form onsubmit="saveBillingSettings(event)">
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <label>Default Currency</label>
+                                <select id="currency">
+                                    <option value="USD">USD - US Dollar</option>
+                                    <option value="EUR">EUR - Euro</option>
+                                    <option value="GBP">GBP - British Pound</option>
+                                    <option value="INR" selected>INR - Indian Rupee</option>
+                                </select>
+                            </div>
+                            <div class="form-field">
+                                <label>Tax Rate (%)</label>
+                                <input type="number" id="taxRate" value="0" step="0.01" min="0" max="100">
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <label>Late Fee (Fixed Amount)</label>
+                                <input type="number" id="lateFee" value="100" step="1" min="0">
+                            </div>
+                            <div class="form-field">
+                                <label>Grace Period (Days)</label>
+                                <input type="number" id="gracePeriod" value="5" min="0" max="30">
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <label>Bill Due Date (Day of Month)</label>
+                                <input type="number" id="dueDate" value="5" min="1" max="31">
+                            </div>
+                            <div class="form-field">
+                                <label>Bill Generation Day</label>
+                                <input type="number" id="genDate" value="1" min="1" max="31">
+                            </div>
+                        </div>
+
+                        <div class="settings-card">
+                            <div class="settings-card-header">
+                                <div>
+                                    <div class="settings-card-title">Auto-Generate Bills</div>
+                                    <div class="settings-card-description">Automatically generate bills on the 1st of each month</div>
+                                </div>
+                                <div class="toggle-switch" onclick="toggleSwitch(this)"></div>
+                            </div>
+                        </div>
+
+                        <div class="settings-card">
+                            <div class="settings-card-header">
+                                <div>
+                                    <div class="settings-card-title">Email Bills to Tenants</div>
+                                    <div class="settings-card-description">Automatically send bills via email when generated</div>
+                                </div>
+                                <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <path d="M3 8L6 11L13 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                </svg>
+                                Save Billing Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="navbar-dropdown.js"></script>
+    <script src="api-connector.js"></script>
+    <script src="settings-script.js"></script>
+    <script>
+        // Linus UI Profile Settings Functions
+
+        // Handle avatar upload
+        function handleAvatarUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Check file size (max 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                showNotification('File size must be less than 2MB', 'error');
+                return;
+            }
+
+            // Check file type
+            if (!file.type.startsWith('image/')) {
+                showNotification('Please upload an image file', 'error');
+                return;
+            }
+
+            // Read and display the image
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const avatarImage = document.getElementById('profileAvatar');
+                const sidebarAvatar = document.getElementById('sidebarAvatar');
+                
+                avatarImage.innerHTML = `<img src="${e.target.result}" alt="Profile">`;
+                sidebarAvatar.innerHTML = `<img src="${e.target.result}" alt="User" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                
+                // Save to localStorage
+                localStorage.setItem('profileAvatar', e.target.result);
+                
+                // Show success message
+                showNotification('Profile photo updated successfully!', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Save profile
+        function saveProfile(event) {
+            event.preventDefault();
+
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const propertyName = document.getElementById('propertyName').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const propertyAddress = document.getElementById('propertyAddress').value.trim();
+            const role = document.getElementById('role').value.trim();
+
+            // Validation
+            if (!fullName || !email) {
+                showNotification('Name and email are required!', 'error');
+                return;
+            }
+
+            if (!propertyName) {
+                showNotification('Property name is required!', 'error');
+                return;
+            }
+
+            const profileData = {
+                fullName: fullName,
+                email: email,
+                propertyName: propertyName,
+                phone: phone,
+                propertyAddress: propertyAddress,
+                role: role
+            };
+
+            // Save to localStorage
+            localStorage.setItem('userProfile', JSON.stringify(profileData));
+            
+            // Update userData as well for consistency
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            userData.name = fullName;
+            userData.email = email;
+            userData.propertyName = propertyName;
+            userData.phone = phone;
+            userData.propertyAddress = propertyAddress;
+            userData.role = role;
+            localStorage.setItem('userData', JSON.stringify(userData));
+            
+            // Update all UI elements
+            const userInitial = fullName.charAt(0).toUpperCase();
+            document.getElementById('navUserName').textContent = fullName;
+            document.getElementById('navUserRole').textContent = role;
+            document.getElementById('dropdownUserName').textContent = fullName;
+            document.getElementById('dropdownUserEmail').textContent = email;
+            
+            // Update avatar initial if no custom avatar
+            const savedAvatar = localStorage.getItem('profileAvatar');
+            if (!savedAvatar) {
+                updateAvatarInitial(userInitial);
+            }
+
+            // Show success message
+            showNotification('Profile saved successfully!', 'success');
+            
+            // Redirect to dashboard after saving
+            setTimeout(() => {
+                window.location.href = 'admin-dashboard.html';
+            }, 500);
+        }
+
+        // Reset form
+        function resetForm() {
+            // Reload saved data or use defaults
+            loadProfileData();
+            showNotification('Changes discarded', 'info');
+        }
+
+        // Load profile data from localStorage
+        function loadProfileData() {
+            // Get user data from localStorage
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            const savedProfile = localStorage.getItem('userProfile');
+            
+            let profileData;
+            if (savedProfile) {
+                profileData = JSON.parse(savedProfile);
+            } else {
+                // Use userData from registration/login
+                profileData = {
+                    fullName: userData.name || '',
+                    email: userData.email || '',
+                    propertyName: userData.propertyName || '',
+                    phone: userData.phone || '',
+                    propertyAddress: userData.propertyAddress || '',
+                    role: userData.role || 'Administrator'
+                };
+            }
+
+            // Update form fields
+            document.getElementById('fullName').value = profileData.fullName;
+            document.getElementById('email').value = profileData.email;
+            document.getElementById('propertyName').value = profileData.propertyName || '';
+            document.getElementById('phone').value = profileData.phone;
+            document.getElementById('propertyAddress').value = profileData.propertyAddress || '';
+            document.getElementById('role').value = profileData.role;
+
+            // Update navbar and sidebar
+            const userName = profileData.fullName || 'Admin User';
+            const userEmail = profileData.email || 'admin@billflow.com';
+            const userInitial = userName.charAt(0).toUpperCase();
+
+            document.getElementById('navUserName').textContent = userName;
+            document.getElementById('navUserRole').textContent = profileData.role;
+            document.getElementById('dropdownUserName').textContent = userName;
+            document.getElementById('dropdownUserEmail').textContent = userEmail;
+
+            // Load avatar
+            const savedAvatar = localStorage.getItem('profileAvatar');
+            if (savedAvatar) {
+                const avatarImage = document.getElementById('profileAvatar');
+                avatarImage.innerHTML = `<img src="${savedAvatar}" alt="Profile">`;
+                
+                // Update sidebar avatar too
+                const sidebarAvatar = document.getElementById('sidebarAvatar');
+                sidebarAvatar.innerHTML = `<img src="${savedAvatar}" alt="Profile">`;
+            } else {
+                // Set default avatar with user's initial
+                updateAvatarInitial(userInitial);
+            }
+        }
+
+        // Update avatar initial
+        function updateAvatarInitial(initial) {
+            const profileAvatar = document.getElementById('profileAvatar');
+            const sidebarAvatar = document.getElementById('sidebarAvatar');
+            
+            const avatarSvg = `data:image/svg+xml,%3Csvg width='132' height='132' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='66' cy='66' r='66' fill='%23F7F8FB'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%236C5CE7' font-family='Arial' font-size='48' font-weight='bold'%3E${initial}%3C/text%3E%3C/svg%3E`;
+            const sidebarAvatarSvg = `data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='20' fill='%236C5CE7'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='Arial' font-size='16' font-weight='bold'%3E${initial}%3C/text%3E%3C/svg%3E`;
+            
+            profileAvatar.innerHTML = `<img src="${avatarSvg}" alt="Profile">`;
+            sidebarAvatar.innerHTML = `<img src="${sidebarAvatarSvg}" alt="User">`;
+        }
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            // Create notification element
+            const notification = document.createElement('div');
+            
+            let bgColor;
+            if (type === 'success') {
+                bgColor = 'linear-gradient(135deg, #6C5CE7 0%, #A29BFE 100%)';
+            } else if (type === 'info') {
+                bgColor = 'linear-gradient(135deg, #3498db 0%, #5dade2 100%)';
+            } else if (type === 'error') {
+                bgColor = 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)';
+            } else {
+                bgColor = '#636E72';
+            }
+            
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 32px;
+                background: ${bgColor};
+                color: white;
+                padding: 16px 24px;
+                border-radius: 12px;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+                z-index: 10000;
+                font-size: 14px;
+                font-weight: 600;
+                animation: slideIn 0.3s ease-out;
+            `;
+            notification.textContent = message;
+
+            // Add to page
+            document.body.appendChild(notification);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Load profile data on page load
+        document.addEventListener('DOMContentLoaded', loadProfileData);
+
+        // Unified Sidebar Toggle for Linus UI
+        function toggleSidebar(event) {
+            if (event) event.stopPropagation();
+            
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const isMobile = window.innerWidth <= 768;
+
+            if (isMobile) {
+                // Mobile behavior - show/hide with overlay
+                sidebar.classList.toggle('show');
+                overlay.classList.toggle('show');
+            } else {
+                // Desktop behavior - expand/collapse
+                sidebar.classList.toggle('expanded');
+                
+                // Save state
+                const isExpanded = sidebar.classList.contains('expanded');
+                localStorage.setItem('sidebarExpanded', isExpanded);
+            }
+        }
+
+        // Toggle User Dropdown
+        function toggleUserDropdown(event) {
+            if (event) event.stopPropagation();
+            
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('userDropdown');
+            const userSection = document.querySelector('.sidebar-user');
+            
+            if (dropdown && !userSection.contains(event.target) && !dropdown.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // Handle Logout
+        async function handleLogout(event) {
+            event.preventDefault();
+            const confirmed = await confirmAction({
+                title: 'Logout?',
+                message: 'Are you sure you want to logout?',
+                confirmText: 'Logout',
+                cancelText: 'Stay',
+                type: 'warning'
+            });
+            if (confirmed) {
+                localStorage.clear();
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Show Coming Soon message
+        function showComingSoon(event) {
+            event.preventDefault();
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.remove('show');
+            showNotification('Company Settings - Coming Soon!', 'info');
+        }
+
+        // Restore sidebar state on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const isExpanded = localStorage.getItem('sidebarExpanded') === 'true';
+            
+            // Only auto-expand on desktop
+            if (isExpanded && window.innerWidth > 768) {
+                sidebar.classList.add('expanded');
+            }
+
+            // Load profile data
+            loadProfileData();
+        });
+    </script>
+    <script src="notification-system.js"></script>
+</body>
+</html>

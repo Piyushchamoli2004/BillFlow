@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recent Activities - BillFlow</title>
+    <link rel="stylesheet" href="dashboard-styles.css">
+    <link rel="stylesheet" href="notification-system.css">
+    <style>
+        /* Override main content positioning */
+        .main-container {
+            margin-left: 260px;
+            margin-top: 70px;
+            min-height: calc(100vh - 70px);
+        }
+        
+        .main-content {
+            padding: 32px;
+            width: 100%;
+            background: #f8fafc;
+        }
+        
+        .page-header {
+            margin-bottom: 32px;
+        }
+        
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        
+        .breadcrumb-link {
+            color: #667eea;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        
+        .breadcrumb-link:hover {
+            opacity: 0.7;
+        }
+        
+        .breadcrumb-current {
+            color: #4b5563;
+        }
+        
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        
+        .page-subtitle {
+            font-size: 16px;
+            color: #6b7280;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #4b5563;
+            margin-bottom: 8px;
+        }
+
+        .filter-input, .filter-select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .filter-input:focus, .filter-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .activities-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px 24px;
+            border-bottom: 1px solid #f3f4f6;
+            transition: background 0.2s;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-item:hover {
+            background: #f9fafb;
+        }
+
+        .activity-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .activity-icon-success {
+            background: #d1fae5;
+            color: #10b981;
+        }
+
+        .activity-icon-primary {
+            background: #dbeafe;
+            color: #3b82f6;
+        }
+
+        .activity-icon-warning {
+            background: #fef3c7;
+            color: #f59e0b;
+        }
+
+        .activity-icon-info {
+            background: #e0e7ff;
+            color: #6366f1;
+        }
+
+        .activity-icon-danger {
+            background: #fecaca;
+            color: #ef4444;
+        }
+
+        .activity-details {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .activity-description {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .activity-time {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .activity-amount {
+            font-size: 16px;
+            font-weight: 600;
+            color: #4b5563;
+            padding: 8px 16px;
+            background: #f3f4f6;
+            border-radius: 8px;
+        }
+
+        .activity-amount-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .activity-amount-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .activity-amount-danger {
+            background: #fecaca;
+            color: #991b1b;
+        }
+
+        .activity-badge {
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .empty-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 24px;
+            opacity: 0.3;
+        }
+
+        .empty-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .empty-text {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .main-container {
+                margin-left: 0;
+                margin-top: 60px;
+                width: 100%;
+            }
+            
+            .main-content {
+                padding: 16px;
+            }
+            
+            .page-header {
+                margin-bottom: 20px;
+            }
+            
+            .page-title {
+                font-size: 24px;
+            }
+            
+            .page-subtitle {
+                font-size: 14px;
+            }
+            
+            .filter-bar {
+                padding: 16px;
+                gap: 12px;
+            }
+            
+            .filter-group {
+                min-width: 100%;
+            }
+            
+            .filter-label {
+                font-size: 13px;
+            }
+            
+            .filter-input, .filter-select {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+            
+            .activity-item {
+                padding: 16px;
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+            
+            .activity-icon {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .activity-icon svg {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .activity-details {
+                flex: 1;
+                min-width: 0;
+            }
+            
+            .activity-title {
+                font-size: 14px;
+            }
+            
+            .activity-description {
+                font-size: 12px;
+            }
+            
+            .activity-time {
+                font-size: 12px;
+            }
+            
+            .activity-amount {
+                font-size: 14px;
+                padding: 6px 12px;
+                width: 100%;
+                text-align: center;
+            }
+            
+            .activity-badge {
+                padding: 4px 10px;
+                font-size: 11px;
+            }
+            
+            .empty-state {
+                padding: 60px 16px;
+            }
+            
+            .empty-icon {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .empty-title {
+                font-size: 18px;
+            }
+            
+            .empty-text {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="top-navbar">
+        <div class="nav-left">
+            <div class="logo">
+                <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                    <rect width="36" height="36" rx="10" fill="url(#logoGradient)"/>
+                    <path d="M11 13h14M11 18h14M11 23h10" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                    <defs>
+                        <linearGradient id="logoGradient" x1="0" y1="0" x2="36" y2="36">
+                            <stop offset="0%" style="stop-color:#667eea"/>
+                            <stop offset="100%" style="stop-color:#764ba2"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span class="logo-text">BillFlow</span>
+            </div>
+        </div>
+        
+        <div class="nav-right">
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <img src="data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23667eea'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='Arial' font-size='16' font-weight='bold'%3EA%3C/text%3E%3C/svg%3E" alt="Admin">
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <a href="admin-dashboard.html" class="nav-item">
+                    <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none">
+                        <rect x="3" y="3" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                        <rect x="3" y="12" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                        <rect x="12" y="3" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                        <rect x="12" y="12" width="7" height="7" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                    </svg>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                
+                <a href="generate-bill.html" class="nav-item">
+                    <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none">
+                        <path d="M7 3L5 5V19L7 21H15L17 19V5L15 3H7Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        <path d="M8 8H14M8 11H14M8 14H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    <span class="nav-text">Generate Bill</span>
+                </a>
+                
+                <a href="payment-history.html" class="nav-item">
+                    <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none">
+                        <rect x="3" y="6" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M7 6V5C7 3.89543 7.89543 3 9 3H13C14.1046 3 15 3.89543 15 5V6" stroke="currentColor" stroke-width="1.5"/>
+                        <circle cx="11" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/>
+                    </svg>
+                    <span class="nav-text">Payment History</span>
+                </a>
+                
+                <a href="tenant-details.html" class="nav-item">
+                    <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none">
+                        <circle cx="11" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M6 19C6 16 8 14 11 14C14 14 16 16 16 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    <span class="nav-text">Tenant Details</span>
+                </a>
+                
+                <a href="settings.html" class="nav-item">
+                    <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none">
+                        <circle cx="11" cy="11" r="3" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M11 3V5M11 17V19M19 11H17M5 11H3M16.5 5.5L15 7M7 15L5.5 16.5M16.5 16.5L15 15M7 7L5.5 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    <span class="nav-text">Settings</span>
+                </a>
+                
+                <div class="sidebar-divider"></div>
+                
+                <a href="#logout" class="nav-item nav-item-logout">
+                    <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none">
+                        <path d="M9 19H5C3.89543 19 3 18.1046 3 17V5C3 3.89543 3.89543 3 5 3H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        <path d="M15 15L19 11L15 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M19 11H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    <span class="nav-text">Logout</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="breadcrumb">
+                    <a href="admin-dashboard.html" class="breadcrumb-link">Dashboard</a>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M6 12L10 8L6 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="breadcrumb-current">Recent Activities</span>
+                </div>
+                <h1 class="page-title">Recent Activities</h1>
+                <p class="page-subtitle">View all recent activities and transactions</p>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label class="filter-label">Search</label>
+                    <input type="text" class="filter-input" id="searchActivities" placeholder="Search activities...">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Activity Type</label>
+                    <select class="filter-select" id="filterType">
+                        <option value="all">All Types</option>
+                        <option value="payment">Payments</option>
+                        <option value="bill">Bills Generated</option>
+                        <option value="pending">Pending</option>
+                        <option value="overdue">Overdue</option>
+                        <option value="tenant">Tenant Activities</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Time Period</label>
+                    <select class="filter-select" id="filterPeriod">
+                        <option value="all">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Activities Container -->
+            <div class="activities-container" id="activitiesContainer">
+                <!-- Activities will be loaded here -->
+            </div>
+        </main>
+    </div>
+
+    <script src="api-connector.js"></script>
+    <script src="notification-system.js"></script>
+    <script src="recent-activities-script.js"></script>
+</body>
+</html>

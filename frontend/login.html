@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - BillFlow</title>
+    <link rel="stylesheet" href="notification-system.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #e6f0ff 0%, #f0ebff 50%, #ffe6f5 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 30% 40%, rgba(102, 126, 234, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 70% 60%, rgba(147, 112, 219, 0.10) 0%, transparent 50%),
+                radial-gradient(circle at 50% 80%, rgba(79, 138, 255, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+            animation: ambientGlow 20s ease-in-out infinite;
+        }
+
+        @keyframes ambientGlow {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(5%, 5%) rotate(90deg); }
+            50% { transform: translate(-5%, 5%) rotate(180deg); }
+            75% { transform: translate(-5%, -5%) rotate(270deg); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 460px;
+            animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(40px) saturate(150%);
+            -webkit-backdrop-filter: blur(40px) saturate(150%);
+            border-radius: 28px;
+            padding: 2.5rem 2rem;
+            box-shadow: 
+                0 25px 70px rgba(102, 126, 234, 0.18),
+                0 0 0 1px rgba(255, 255, 255, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 1);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            position: relative;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 28px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(147, 112, 219, 0.2));
+            z-index: -1;
+            filter: blur(20px);
+            opacity: 0.6;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .brand-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .brand-icon svg {
+            width: 28px;
+            height: 28px;
+            color: white;
+        }
+
+        .brand-name {
+            font-size: 1.75rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.025em;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.875rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
+        }
+
+        .header p {
+            font-size: 0.9375rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            color: #94a3b8;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .input-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 3rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1.5px solid rgba(203, 213, 225, 0.6);
+            border-radius: 12px;
+            font-size: 0.9375rem;
+            color: #1e293b;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: #ffffff;
+            box-shadow: 
+                0 0 0 3px rgba(102, 126, 234, 0.1),
+                0 4px 12px rgba(102, 126, 234, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .form-input::placeholder {
+            color: #94a3b8;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 0.25rem;
+            display: flex;
+            align-items: center;
+            transition: color 0.3s ease;
+            z-index: 2;
+        }
+
+        .toggle-password:hover {
+            color: #667eea;
+        }
+
+        .toggle-password svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .form-options {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .checkbox-input {
+            width: 18px;
+            height: 18px;
+            accent-color: #667eea;
+            cursor: pointer;
+        }
+
+        .checkbox-label {
+            font-size: 0.875rem;
+            color: #475569;
+            font-weight: 500;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .forgot-link {
+            font-size: 0.875rem;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .forgot-link:hover {
+            color: #5568d3;
+            text-decoration: underline;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 8px 24px rgba(102, 126, 234, 0.35),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            letter-spacing: 0.025em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 12px 32px rgba(102, 126, 234, 0.45),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 1.75rem 0;
+            position: relative;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 44%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(102, 126, 234, 0.25), transparent);
+        }
+
+        .divider::before {
+            left: 0;
+        }
+
+        .divider::after {
+            right: 0;
+        }
+
+        .divider-badge {
+            display: inline-block;
+            padding: 0.25rem 1rem;
+            background: rgba(102, 126, 234, 0.08);
+            color: #667eea;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            border-radius: 20px;
+            border: 1px solid rgba(102, 126, 234, 0.15);
+        }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 0.875rem 1.5rem;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            letter-spacing: 0.025em;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.08);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(102, 126, 234, 0.05);
+            border-color: #5568d3;
+            color: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+
+        .btn-secondary svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .back-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 8px;
+        }
+
+        .back-link:hover {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .back-link svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        @media (max-width: 640px) {
+            .card {
+                padding: 2rem 1.5rem;
+            }
+
+            .header h1 {
+                font-size: 1.625rem;
+            }
+
+            .form-options {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+
+            body {
+                padding: 1.5rem 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 1.75rem 1.25rem;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .brand-name {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <!-- Brand -->
+            <div class="brand">
+                <div class="brand-icon">
+                    <i data-lucide="layout-dashboard"></i>
+                </div>
+                <div class="brand-name">BillFlow</div>
+            </div>
+
+            <!-- Header -->
+            <div class="header">
+                <h1>Admin Login</h1>
+                <p>Generate and manage bills with ease</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm">
+                <!-- Email Field -->
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <i data-lucide="mail"></i>
+                        </span>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            class="form-input" 
+                            placeholder="admin@billflow.com"
+                            autocomplete="email"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <!-- Password Field -->
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="password-wrapper">
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <i data-lucide="lock"></i>
+                            </span>
+                            <input 
+                                type="password" 
+                                id="password" 
+                                class="form-input" 
+                                placeholder="Enter your password"
+                                autocomplete="current-password"
+                                required
+                            >
+                            <button type="button" class="toggle-password" id="togglePassword">
+                                <i data-lucide="eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Options -->
+                <div class="form-options">
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" id="remember" class="checkbox-input">
+                        <span class="checkbox-label">Remember me</span>
+                    </label>
+                    <a href="#" class="forgot-link" id="forgotPasswordLink">Forgot password?</a>
+                </div>
+
+                <!-- Login Button -->
+                <button type="submit" class="btn-primary">
+                    <i data-lucide="log-in"></i>
+                    <span>Login to Dashboard</span>
+                </button>
+
+                <!-- Divider -->
+                <div class="divider">
+                    <span class="divider-badge">or</span>
+                </div>
+
+                <!-- Secondary Button -->
+                <a href="register.html" class="btn-secondary">
+                    <i data-lucide="user-plus"></i>
+                    <span>Create New Admin Account</span>
+                </a>
+            </form>
+
+            <!-- Back Link -->
+            <a href="index.html" class="back-link">
+                <i data-lucide="arrow-left"></i>
+                <span>Back to Home</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // ============================================
+        // SECURE AUTHENTICATION SYSTEM
+        // ============================================
+        
+        // Security: Simple hash function for password storage (in production, use bcrypt on backend)
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password + 'billflow_salt_2025'); // Add salt
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // Security: Generate secure session token
+        function generateSecureToken() {
+            const array = new Uint8Array(32);
+            crypto.getRandomValues(array);
+            return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+        }
+
+        // Security: Rate limiting for login attempts
+        const loginAttempts = {
+            attempts: {},
+            maxAttempts: 5,
+            lockoutTime: 15 * 60 * 1000, // 15 minutes
+            
+            canAttempt(email) {
+                const now = Date.now();
+                const userAttempts = this.attempts[email];
+                
+                if (!userAttempts) return true;
+                
+                // Check if lockout period has passed
+                if (userAttempts.lockedUntil && now < userAttempts.lockedUntil) {
+                    const minutesLeft = Math.ceil((userAttempts.lockedUntil - now) / 60000);
+                    return { allowed: false, minutesLeft };
+                }
+                
+                // Reset if lockout period passed
+                if (userAttempts.lockedUntil && now >= userAttempts.lockedUntil) {
+                    delete this.attempts[email];
+                    return true;
+                }
+                
+                return userAttempts.count < this.maxAttempts;
+            },
+            
+            recordAttempt(email, success) {
+                const now = Date.now();
+                
+                if (success) {
+                    delete this.attempts[email];
+                    return;
+                }
+                
+                if (!this.attempts[email]) {
+                    this.attempts[email] = { count: 0, lockedUntil: null };
+                }
+                
+                this.attempts[email].count++;
+                
+                if (this.attempts[email].count >= this.maxAttempts) {
+                    this.attempts[email].lockedUntil = now + this.lockoutTime;
+                }
+            }
+        };
+
+        // Security: Input sanitization
+        function sanitizeInput(input) {
+            return input.trim().replace(/[<>]/g, '');
+        }
+
+        // Security: Email validation with strict regex
+        function validateEmail(email) {
+            const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+            return emailRegex.test(email);
+        }
+
+        // Security: Session management
+        const SessionManager = {
+            create(userId, rememberMe = false) {
+                const token = generateSecureToken();
+                const expiresAt = rememberMe 
+                    ? Date.now() + (30 * 24 * 60 * 60 * 1000) // 30 days
+                    : Date.now() + (24 * 60 * 60 * 1000); // 24 hours
+                
+                const session = {
+                    token,
+                    userId,
+                    createdAt: Date.now(),
+                    expiresAt,
+                    lastActivity: Date.now()
+                };
+                
+                localStorage.setItem('authSession', JSON.stringify(session));
+                localStorage.setItem('authToken', token);
+                
+                return session;
+            },
+            
+            validate() {
+                const sessionData = localStorage.getItem('authSession');
+                if (!sessionData) return false;
+                
+                try {
+                    const session = JSON.parse(sessionData);
+                    const now = Date.now();
+                    
+                    // Check if expired
+                    if (now > session.expiresAt) {
+                        this.destroy();
+                        return false;
+                    }
+                    
+                    // Update last activity
+                    session.lastActivity = now;
+                    localStorage.setItem('authSession', JSON.stringify(session));
+                    
+                    return true;
+                } catch {
+                    return false;
+                }
+            },
+            
+            destroy() {
+                localStorage.removeItem('authSession');
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userData');
+            },
+            
+            getUserId() {
+                const sessionData = localStorage.getItem('authSession');
+                if (!sessionData) return null;
+                
+                try {
+                    const session = JSON.parse(sessionData);
+                    return session.userId;
+                } catch {
+                    return null;
+                }
+            }
+        };
+
+        // Get user-specific storage key
+        function getUserStorageKey(userId, key) {
+            return `user_${userId}_${key}`;
+        }
+
+        // Load user-specific data
+        function loadUserData(userId) {
+            const userDataKey = getUserStorageKey(userId, 'data');
+            const userBillsKey = getUserStorageKey(userId, 'bills');
+            const userTenantsKey = getUserStorageKey(userId, 'tenants');
+            
+            // Load user data
+            const userData = localStorage.getItem(userDataKey);
+            if (userData) {
+                localStorage.setItem('userData', userData);
+            }
+            
+            // Load user bills
+            const userBills = localStorage.getItem(userBillsKey);
+            if (userBills) {
+                localStorage.setItem('generatedBills', userBills);
+            } else {
+                localStorage.setItem('generatedBills', '[]');
+            }
+            
+            // Load user tenants
+            const userTenants = localStorage.getItem(userTenantsKey);
+            if (userTenants) {
+                localStorage.setItem('tenants', userTenants);
+            } else {
+                localStorage.setItem('tenants', '[]');
+            }
+        }
+
+        // Password Toggle Functionality
+        const togglePasswordBtn = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+
+        if (togglePasswordBtn && passwordInput) {
+            togglePasswordBtn.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+                const icon = togglePasswordBtn.querySelector('i');
+                icon.setAttribute('data-lucide', type === 'password' ? 'eye' : 'eye-off');
+                lucide.createIcons();
+            });
+        }
+
+        // Forgot Password Modal
+        function showForgotPasswordModal() {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                backdrop-filter: blur(4px);
+                animation: fadeIn 0.3s ease;
+            `;
+            
+            const modalContent = document.createElement('div');
+            modalContent.style.cssText = `
+                background: white;
+                border-radius: 16px;
+                padding: 32px;
+                max-width: 450px;
+                width: 90%;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                animation: slideIn 0.3s ease;
+            `;
+            
+            modalContent.innerHTML = `
+                <h2 style="margin: 0 0 8px 0; color: #1a1a1a; font-size: 24px; font-weight: 600;">Reset Password</h2>
+                <p style="margin: 0 0 24px 0; color: #666; font-size: 14px;">Enter your email address and we'll send you a password reset code.</p>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #333; font-size: 14px; font-weight: 500;">Email Address</label>
+                    <input type="email" id="resetEmail" placeholder="admin@billflow.com" style="
+                        width: 100%;
+                        padding: 12px 16px;
+                        border: 2px solid #e2e8f0;
+                        border-radius: 8px;
+                        font-size: 15px;
+                        transition: all 0.2s;
+                    ">
+                </div>
+                
+                <div style="display: flex; gap: 12px;">
+                    <button id="cancelResetBtn" style="
+                        flex: 1;
+                        padding: 12px 24px;
+                        background: #f3f4f6;
+                        color: #666;
+                        border: none;
+                        border-radius: 8px;
+                        font-size: 15px;
+                        font-weight: 500;
+                        cursor: pointer;
+                    ">Cancel</button>
+                    <button id="sendResetBtn" style="
+                        flex: 1;
+                        padding: 12px 24px;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        font-size: 15px;
+                        font-weight: 500;
+                        cursor: pointer;
+                    ">Send Reset Code</button>
+                </div>
+            `;
+            
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            // Cancel button
+            document.getElementById('cancelResetBtn').onclick = () => {
+                document.body.removeChild(modal);
+            };
+            
+            // Send reset button
+            document.getElementById('sendResetBtn').onclick = async () => {
+                const email = document.getElementById('resetEmail').value.trim();
+                
+                if (!email || !validateEmail(email)) {
+                    showError('Please enter a valid email address');
+                    return;
+                }
+                
+                // Check if user exists
+                const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                const user = users.find(u => u.email === email);
+                
+                if (!user) {
+                    // Security: Don't reveal if email exists
+                    showSuccess('If an account exists with this email, a reset code has been sent.');
+                    setTimeout(() => document.body.removeChild(modal), 2000);
+                    return;
+                }
+                
+                // Generate 6-digit reset code
+                const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+                const resetExpiry = Date.now() + (15 * 60 * 1000); // 15 minutes
+                
+                // Save reset code
+                const resetData = {
+                    email,
+                    code: resetCode,
+                    expiresAt: resetExpiry
+                };
+                localStorage.setItem('passwordReset', JSON.stringify(resetData));
+                
+                // Show code (in production, send via email)
+                document.body.removeChild(modal);
+                showResetCodeModal(resetCode, email);
+            };
+            
+            // Click outside to close
+            modal.onclick = (e) => {
+                if (e.target === modal) {
+                    document.body.removeChild(modal);
+                }
+            };
+        }
+
+        // Show Reset Code Modal (simulates email)
+        function showResetCodeModal(code, email) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                backdrop-filter: blur(4px);
+                animation: fadeIn 0.3s ease;
+            `;
+            
+            const modalContent = document.createElement('div');
+            modalContent.style.cssText = `
+                background: white;
+                border-radius: 16px;
+                padding: 32px;
+                max-width: 450px;
+                width: 90%;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                animation: slideIn 0.3s ease;
+            `;
+            
+            modalContent.innerHTML = `
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <div style="width: 64px; height: 64px; margin: 0 auto 16px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                            <polyline points="22,6 12,13 2,6"/>
+                        </svg>
+                    </div>
+                    <h2 style="margin: 0 0 8px 0; color: #1a1a1a; font-size: 24px; font-weight: 600;">Reset Code Sent!</h2>
+                    <p style="margin: 0 0 24px 0; color: #666; font-size: 14px;">We've sent a reset code to ${email}</p>
+                </div>
+                
+                <div style="background: #f0fdf4; border: 2px dashed #10b981; border-radius: 12px; padding: 24px; margin-bottom: 24px; text-align: center;">
+                    <p style="margin: 0 0 8px 0; color: #666; font-size: 13px; font-weight: 500;">YOUR RESET CODE</p>
+                    <p style="margin: 0; color: #10b981; font-size: 32px; font-weight: 700; letter-spacing: 4px; font-family: 'Courier New', monospace;">${code}</p>
+                </div>
+                
+                <p style="margin: 0 0 24px 0; color: #666; font-size: 13px; text-align: center;">
+                    <strong>Note:</strong> In production, this code would be sent to your email. Code expires in 15 minutes.
+                </p>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #333; font-size: 14px; font-weight: 500;">Enter Reset Code</label>
+                    <input type="text" id="verifyCode" placeholder="Enter 6-digit code" maxlength="6" style="
+                        width: 100%;
+                        padding: 12px 16px;
+                        border: 2px solid #e2e8f0;
+                        border-radius: 8px;
+                        font-size: 18px;
+                        text-align: center;
+                        letter-spacing: 8px;
+                        font-family: 'Courier New', monospace;
+                    ">
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #333; font-size: 14px; font-weight: 500;">New Password</label>
+                    <input type="password" id="newPassword" placeholder="Enter new password" style="
+                        width: 100%;
+                        padding: 12px 16px;
+                        border: 2px solid #e2e8f0;
+                        border-radius: 8px;
+                        font-size: 15px;
+                    ">
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #333; font-size: 14px; font-weight: 500;">Confirm Password</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirm new password" style="
+                        width: 100%;
+                        padding: 12px 16px;
+                        border: 2px solid #e2e8f0;
+                        border-radius: 8px;
+                        font-size: 15px;
+                    ">
+                </div>
+                
+                <button id="resetPasswordBtn" style="
+                    width: 100%;
+                    padding: 12px 24px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 15px;
+                    font-weight: 500;
+                    cursor: pointer;
+                ">Reset Password</button>
+            `;
+            
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            // Reset password button
+            document.getElementById('resetPasswordBtn').onclick = async () => {
+                const enteredCode = document.getElementById('verifyCode').value.trim();
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                // Get stored reset data
+                const resetData = JSON.parse(localStorage.getItem('passwordReset') || '{}');
+                
+                // Validate code
+                if (enteredCode !== resetData.code) {
+                    showError('Invalid reset code');
+                    return;
+                }
+                
+                // Check expiry
+                if (Date.now() > resetData.expiresAt) {
+                    showError('Reset code has expired. Please request a new one.');
+                    localStorage.removeItem('passwordReset');
+                    document.body.removeChild(modal);
+                    return;
+                }
+                
+                // Validate passwords
+                if (newPassword.length < 8) {
+                    showError('Password must be at least 8 characters long');
+                    return;
+                }
+                
+                if (newPassword !== confirmPassword) {
+                    showError('Passwords do not match');
+                    return;
+                }
+                
+                // Update user password
+                const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                const userIndex = users.findIndex(u => u.email === resetData.email);
+                
+                if (userIndex !== -1) {
+                    users[userIndex].password = await hashPassword(newPassword);
+                    users[userIndex].passwordUpdatedAt = Date.now();
+                    localStorage.setItem('registeredUsers', JSON.stringify(users));
+                    
+                    // Clear reset data
+                    localStorage.removeItem('passwordReset');
+                    
+                    showSuccess('Password reset successfully! You can now login with your new password.');
+                    document.body.removeChild(modal);
+                } else {
+                    showError('User not found');
+                }
+            };
+            
+            // Click outside to close
+            modal.onclick = (e) => {
+                if (e.target === modal) {
+                    document.body.removeChild(modal);
+                }
+            };
+        }
+
+        // Forgot password link
+        document.getElementById('forgotPasswordLink')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            showForgotPasswordModal();
+        });
+
+        // Form Submission with Security
+        const form = document.getElementById('loginForm');
+        
+        if (form) {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const submitBtn = form.querySelector('.btn-primary');
+                const btnText = submitBtn.querySelector('span');
+                const originalText = btnText.textContent;
+                
+                try {
+                    const email = sanitizeInput(document.getElementById('email').value);
+                    const password = passwordInput.value;
+                    const rememberMe = document.getElementById('remember').checked;
+                    
+                    // Validate email format
+                    if (!validateEmail(email)) {
+                        showError('Please enter a valid email address');
+                        return;
+                    }
+                    
+                    // Check rate limiting
+                    const canAttempt = loginAttempts.canAttempt(email);
+                    if (typeof canAttempt === 'object' && !canAttempt.allowed) {
+                        showError(`Too many failed attempts. Please try again in ${canAttempt.minutesLeft} minutes.`);
+                        return;
+                    }
+                    
+                    btnText.textContent = 'Logging in...';
+                    submitBtn.disabled = true;
+                    
+                    // Check rate limiting
+                    const attempt = loginAttempts.canAttempt(email);
+                    if (typeof attempt === 'object' && !attempt.allowed) {
+                        showError(`Too many failed attempts. Try again in ${attempt.minutesLeft} minutes.`);
+                        btnText.textContent = originalText;
+                        submitBtn.disabled = false;
+                        return;
+                    }
+                    
+                    // Call backend API
+                    const result = await window.api.login(email, password, rememberMe);
+                    
+                    console.log('Login result:', result);
+                    console.log('Token after login:', localStorage.getItem('authToken'));
+                    
+                    if (result.status === 'success' && result.data) {
+                        // Record successful attempt
+                        loginAttempts.recordAttempt(email, true);
+                        
+                        // Save user data
+                        const userData = result.data.user;
+                        localStorage.setItem('userData', JSON.stringify({
+                            id: userData.id,
+                            name: userData.name || '',
+                            email: userData.email,
+                            phone: userData.phone || '',
+                            organization: userData.organization || ''
+                        }));
+                        
+                        // Show success message
+                        showSuccess('Login successful! Redirecting to dashboard...');
+                        
+                        console.log('Before redirect - checking storage:');
+                        console.log('authToken:', localStorage.getItem('authToken'));
+                        console.log('userData:', localStorage.getItem('userData'));
+                        
+                        // Redirect to dashboard with longer delay
+                        setTimeout(() => {
+                            console.log('Redirecting now...');
+                            window.location.href = 'admin-dashboard.html';
+                        }, 2000);
+                    } else {
+                        throw new Error(result.message || 'Login failed');
+                    }
+                    
+                } catch (error) {
+                    console.error('Login error:', error);
+                    
+                    // Record failed attempt
+                    loginAttempts.recordAttempt(email, false);
+                    
+                    const remainingAttempts = loginAttempts.maxAttempts - (loginAttempts.attempts[email]?.count || 0);
+                    
+                    if (remainingAttempts > 0) {
+                        showError(error.message || `Login failed. ${remainingAttempts} attempts remaining.`);
+                    } else {
+                        showError('Too many failed attempts. Account locked for 15 minutes.');
+                    }
+                    
+                    btnText.textContent = originalText;
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+
+        // Add animation styles
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            @keyframes slideIn {
+                from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+                to { opacity: 1; transform: translateY(0) scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+    <script src="notification-system.js"></script>
+    <script src="api-connector.js"></script>
+</body>
+</html>

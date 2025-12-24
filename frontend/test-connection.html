@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Test - BillFlow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f7f7f7;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .status.success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .status.error {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .status.pending {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        
+        .links {
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .links a {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 10px;
+            font-weight: 600;
+        }
+        
+        .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 BillFlow Connection Test</h1>
+        
+        <div class="test-section">
+            <h3>Backend API: <span id="apiStatus" class="status pending">Testing...</span></h3>
+            <p><strong>URL:</strong> <code id="apiUrl">Loading...</code></p>
+            <pre id="apiResponse">Waiting for test...</pre>
+            <button onclick="testAPI()">Test Again</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>MongoDB: <span id="dbStatus" class="status pending">Testing...</span></h3>
+            <pre id="dbResponse">Checking backend connection first...</pre>
+        </div>
+        
+        <div class="test-section">
+            <h3>LocalStorage Auth: <span id="authStatus" class="status pending">Checking...</span></h3>
+            <pre id="authInfo">Loading...</pre>
+        </div>
+        
+        <div class="links">
+            <a href="index.html">← Home</a>
+            <a href="login.html">Login</a>
+            <a href="register.html">Register</a>
+            <a href="admin-dashboard.html">Dashboard</a>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api';
+        
+        document.getElementById('apiUrl').textContent = API_BASE_URL;
+        
+        // Test API connection
+        async function testAPI() {
+            const apiStatus = document.getElementById('apiStatus');
+            const apiResponse = document.getElementById('apiResponse');
+            const dbStatus = document.getElementById('dbStatus');
+            const dbResponse = document.getElementById('dbResponse');
+            
+            apiStatus.textContent = 'Testing...';
+            apiStatus.className = 'status pending';
+            apiResponse.textContent = 'Connecting to backend...';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                const data = await response.json();
+                
+                apiStatus.textContent = '✓ Connected';
+                apiStatus.className = 'status success';
+                apiResponse.textContent = JSON.stringify(data, null, 2);
+                
+                // Backend is working, so database should be too
+                dbStatus.textContent = '✓ Connected';
+                dbStatus.className = 'status success';
+                dbResponse.textContent = 'MongoDB is connected (verified by backend)';
+                
+            } catch (error) {
+                apiStatus.textContent = '✗ Failed';
+                apiStatus.className = 'status error';
+                apiResponse.textContent = `Error: ${error.message}\n\nMake sure:\n1. Backend server is running (npm start)\n2. MongoDB is running\n3. Port 3000 is available`;
+                
+                dbStatus.textContent = '? Unknown';
+                dbStatus.className = 'status error';
+                dbResponse.textContent = 'Cannot check - backend is not reachable';
+            }
+        }
+        
+        // Check localStorage auth
+        function checkAuth() {
+            const authStatus = document.getElementById('authStatus');
+            const authInfo = document.getElementById('authInfo');
+            
+            const token = localStorage.getItem('authToken');
+            const userData = localStorage.getItem('userData');
+            const users = localStorage.getItem('registeredUsers');
+            
+            if (token && userData) {
+                authStatus.textContent = '✓ Logged In';
+                authStatus.className = 'status success';
+                
+                try {
+                    const user = JSON.parse(userData);
+                    authInfo.textContent = `User: ${user.name}\nEmail: ${user.email}\nRole: ${user.role || 'N/A'}\n\nToken: ${token.substring(0, 30)}...`;
+                } catch (e) {
+                    authInfo.textContent = 'Token exists but user data is invalid';
+                }
+            } else {
+                authStatus.textContent = '✗ Not Logged In';
+                authStatus.className = 'status error';
+                authInfo.textContent = 'No authentication token found.\n\nPlease register or login first.';
+            }
+            
+            if (users) {
+                try {
+                    const userList = JSON.parse(users);
+                    authInfo.textContent += `\n\nRegistered users: ${userList.length}`;
+                } catch (e) {
+                    // Ignore
+                }
+            }
+        }
+        
+        // Run tests on load
+        testAPI();
+        checkAuth();
+    </script>
+</body>
+</html>

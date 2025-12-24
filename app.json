@@ -1,0 +1,37 @@
+{
+  "name": "BillFlow - Smart Tenant Billing",
+  "description": "Multi-user tenant billing management system with real-time bill generation",
+  "repository": "https://github.com/YOUR-USERNAME/billflow",
+  "logo": "https://via.placeholder.com/350x350/667eea/ffffff?text=BillFlow",
+  "keywords": ["nodejs", "express", "mongodb", "jwt", "billing", "tenant-management"],
+  "success_url": "/",
+  "env": {
+    "NODE_ENV": {
+      "description": "Node environment",
+      "value": "production"
+    },
+    "MONGODB_URI": {
+      "description": "MongoDB Atlas connection string",
+      "value": ""
+    },
+    "JWT_SECRET": {
+      "description": "Secret key for JWT token generation",
+      "generator": "secret"
+    },
+    "FRONTEND_URL": {
+      "description": "Frontend URL for CORS (e.g., https://your-app.netlify.app)",
+      "value": ""
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "free"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Test - BillFlow</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            color: #333;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .test-item {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background: #f5f5f5;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .success { background: #10b981; color: white; }
+        .error { background: #ef4444; color: white; }
+        .loading { background: #f59e0b; color: white; }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            max-height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 Frontend Test Suite</h1>
+        <p>Testing all frontend components and API connections</p>
+        
+        <div class="test-item">
+            <strong>1. API Connector Loaded:</strong>
+            <span id="apiConnectorStatus" class="status loading">Testing...</span>
+        </div>
+        
+        <div class="test-item">
+            <strong>2. Backend Connection:</strong>
+            <span id="backendStatus" class="status loading">Testing...</span>
+            <pre id="backendResponse"></pre>
+        </div>
+        
+        <div class="test-item">
+            <strong>3. Authentication Token:</strong>
+            <span id="authStatus" class="status loading">Checking...</span>
+            <pre id="authInfo"></pre>
+        </div>
+        
+        <div class="test-item">
+            <strong>4. Get Tenants API:</strong>
+            <span id="tenantsStatus" class="status loading">Testing...</span>
+            <pre id="tenantsResponse"></pre>
+        </div>
+        
+        <div class="test-item">
+            <strong>5. Get Bills API:</strong>
+            <span id="billsStatus" class="status loading">Testing...</span>
+            <pre id="billsResponse"></pre>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <button onclick="runTests()">🔄 Run Tests Again</button>
+            <button onclick="window.location.href='login.html'">🔐 Go to Login</button>
+            <button onclick="window.location.href='admin-dashboard.html'">📊 Go to Dashboard</button>
+        </div>
+    </div>
+    
+    <script src="api-connector.js"></script>
+    <script>
+        async function runTests() {
+            console.log('🧪 Running frontend tests...');
+            
+            // Test 1: API Connector
+            const apiConnectorStatus = document.getElementById('apiConnectorStatus');
+            if (typeof window.api !== 'undefined') {
+                apiConnectorStatus.textContent = '✅ Loaded';
+                apiConnectorStatus.className = 'status success';
+            } else {
+                apiConnectorStatus.textContent = '❌ Not Loaded';
+                apiConnectorStatus.className = 'status error';
+            }
+            
+            // Test 2: Backend Connection
+            const backendStatus = document.getElementById('backendStatus');
+            const backendResponse = document.getElementById('backendResponse');
+            try {
+                const response = await fetch('http://localhost:3000/api/health');
+                const data = await response.json();
+                backendStatus.textContent = '✅ Connected';
+                backendStatus.className = 'status success';
+                backendResponse.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                backendStatus.textContent = '❌ Failed';
+                backendStatus.className = 'status error';
+                backendResponse.textContent = error.message;
+            }
+            
+            // Test 3: Authentication
+            const authStatus = document.getElementById('authStatus');
+            const authInfo = document.getElementById('authInfo');
+            const token = localStorage.getItem('authToken');
+            const userData = localStorage.getItem('userData');
+            if (token) {
+                authStatus.textContent = '✅ Authenticated';
+                authStatus.className = 'status success';
+                authInfo.textContent = `Token: ${token.substring(0, 30)}...\nUser: ${userData}`;
+            } else {
+                authStatus.textContent = '⚠️ Not Logged In';
+                authStatus.className = 'status loading';
+                authInfo.textContent = 'Please login first to test authenticated endpoints';
+            }
+            
+            // Test 4: Get Tenants (requires auth)
+            const tenantsStatus = document.getElementById('tenantsStatus');
+            const tenantsResponse = document.getElementById('tenantsResponse');
+            if (token && window.api) {
+                try {
+                    const result = await window.api.getTenants();
+                    tenantsStatus.textContent = '✅ Success';
+                    tenantsStatus.className = 'status success';
+                    tenantsResponse.textContent = JSON.stringify(result.data, null, 2);
+                } catch (error) {
+                    tenantsStatus.textContent = '❌ Failed';
+                    tenantsStatus.className = 'status error';
+                    tenantsResponse.textContent = error.message;
+                }
+            } else {
+                tenantsStatus.textContent = '⚠️ Skipped';
+                tenantsStatus.className = 'status loading';
+                tenantsResponse.textContent = 'Login required';
+            }
+            
+            // Test 5: Get Bills (requires auth)
+            const billsStatus = document.getElementById('billsStatus');
+            const billsResponse = document.getElementById('billsResponse');
+            if (token && window.api) {
+                try {
+                    const result = await window.api.getBills({ limit: 5 });
+                    billsStatus.textContent = '✅ Success';
+                    billsStatus.className = 'status success';
+                    billsResponse.textContent = JSON.stringify(result.data, null, 2);
+                } catch (error) {
+                    billsStatus.textContent = '❌ Failed';
+                    billsStatus.className = 'status error';
+                    billsResponse.textContent = error.message;
+                }
+            } else {
+                billsStatus.textContent = '⚠️ Skipped';
+                billsStatus.className = 'status loading';
+                billsResponse.textContent = 'Login required';
+            }
+        }
+        
+        // Run tests on load
+        window.addEventListener('DOMContentLoaded', runTests);
+    </script>
+</body>
+</html>
