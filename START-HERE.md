@@ -1,4 +1,55 @@
-# 🚀 Quick Start Guide - BillFlow
+# 🚀 DEPLOY BACKEND NOW - Your Frontend is Ready!
+
+## ✅ Frontend Status: LIVE
+**URL:** https://comfy-genie-f9a130.netlify.app/
+
+---
+
+## ⚡ COMPLETE THESE 2 STEPS:
+
+### STEP 1: Deploy Backend to Render.com (5 minutes)
+
+**Go to:** https://render.com
+
+1. Sign up / Login
+2. New + → Web Service
+3. Upload `backend` folder OR connect GitHub
+4. Set **Root Directory:** `backend`
+5. **Build:** `npm install` | **Start:** `npm start`
+6. Add environment variables:
+   ```
+   NODE_ENV=production
+   PORT=3000
+   JWT_SECRET=your_secret_key_here
+   FRONTEND_URL=https://comfy-genie-f9a130.netlify.app
+   MONGODB_URI=(from Step 2)
+   ```
+7. Deploy → Copy your backend URL
+
+### STEP 2: Setup MongoDB Atlas (5 minutes)
+
+**Go to:** https://mongodb.com/cloud/atlas
+
+1. Sign up → Create FREE cluster
+2. Create database user (username: `billflow`, save password!)
+3. Network Access → Allow 0.0.0.0/0
+4. Get connection string
+5. Replace `<password>` and add `/billflow` at end
+6. Add to Render → `MONGODB_URI`
+
+---
+
+## 🎉 THEN TEST:
+
+1. Open: https://comfy-genie-f9a130.netlify.app/
+2. Register new account
+3. Add tenant
+4. Generate bill
+5. ✅ SUCCESS!
+
+---
+
+📖 **Detailed guide:** [DEPLOYMENT-STATUS.md](./DEPLOYMENT-STATUS.md)
 
 ## Prerequisites
 - Node.js installed (v14 or higher)
