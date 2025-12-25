@@ -1,10 +1,22 @@
 [build]
-  command = "cd backend && npm install"
+  # Frontend doesn't need a build command - it's static HTML/CSS/JS
+  command = "echo 'Static frontend - no build required'"
+  publish = "."
   
 [build.environment]
   NODE_VERSION = "18"
 
+# Redirect API calls to your backend server
+# IMPORTANT: Replace YOUR_BACKEND_URL with your actual Render backend URL
+# Example: https://tenant-bill-backend.onrender.com
 [[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/:splat"
+  to = "YOUR_BACKEND_URL/api/:splat"
+  status = 200
+  force = true
+  
+# SPA fallback - serve index.html for all routes
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
   status = 200
