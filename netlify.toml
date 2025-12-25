@@ -7,11 +7,9 @@
   NODE_VERSION = "18"
 
 # Redirect API calls to your backend server
-# IMPORTANT: Replace YOUR_BACKEND_URL with your actual Render backend URL
-# Example: https://tenant-bill-backend.onrender.com
 [[redirects]]
   from = "/api/*"
-  to = "YOUR_BACKEND_URL/api/:splat"
+  to = "https://billflow-backend-3i32.onrender.com/api/:splat"
   status = 200
   force = true
   

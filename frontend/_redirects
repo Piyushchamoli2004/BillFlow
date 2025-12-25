@@ -1,6 +1,5 @@
 # Redirect API calls to backend
-# Replace YOUR_BACKEND_URL with your actual Render backend URL
-/api/*  YOUR_BACKEND_URL/api/:splat  200
+/api/*  https://billflow-backend-3i32.onrender.com/api/:splat  200
 
 # SPA fallback
 /*  /index.html  200
