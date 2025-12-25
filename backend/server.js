@@ -23,6 +23,7 @@ app.use(helmet());
 const allowedOrigins = process.env.NODE_ENV === 'production'
     ? [
         process.env.FRONTEND_URL,
+        'https://billflow1.netlify.app',
         'https://comfy-genie-f9a130.netlify.app'
       ]
     : [
@@ -34,6 +35,7 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
         'http://127.0.0.1:5501',
         'http://127.0.0.1:5502',
         'http://127.0.0.1:3000',
+        'https://billflow1.netlify.app',
         'https://comfy-genie-f9a130.netlify.app'
     ];
 
