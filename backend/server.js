@@ -17,6 +17,13 @@ const tenantRoutes = require('./routes/tenants');
 const app = express();
 
 // Middleware
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    status: "success",
+    message: "BillFlow API is running"
+  });
+});
+
 // Security middleware
 app.use(helmet());
 
