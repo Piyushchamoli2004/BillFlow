@@ -16,14 +16,6 @@ const tenantRoutes = require('./routes/tenants');
 // Initialize express app
 const app = express();
 
-// Middleware
-app.get("/api/health", (req, res) => {
-  res.status(200).json({
-    status: "success",
-    message: "BillFlow API is running"
-  });
-});
-
 // Security middleware
 app.use(helmet());
 
@@ -77,11 +69,24 @@ mongoose.connect(process.env.MONGODB_URI)
     process.exit(1);
 });
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/user', userRoutes);
-app.use('/api/bills', billRoutes);
-app.use('/api/tenants', tenantRoutes);
+// Root route - Welcome message
+app.get('/', (req, res) => {
+    res.json({
+        status: 'success',
+        message: 'Welcome to BillFlow API',
+        version: '1.0.0',
+        endpoints: {
+            health: '/api/health',
+            auth: {
+                register: 'POST /api/auth/register',
+                login: 'POST /api/auth/login'
+            },
+            user: 'GET /api/user/profile (requires auth)',
+            tenants: 'GET /api/tenants (requires auth)',
+            bills: 'GET /api/bills (requires auth)'
+        }
+    });
+});
 
 // Health check route
 app.get('/api/health', (req, res) => {
@@ -92,11 +97,18 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// 404 handler
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/bills', billRoutes);
+app.use('/api/tenants', tenantRoutes);
+
+// 404 handler - must be after all routes
 app.use((req, res) => {
     res.status(404).json({
         status: 'error',
-        message: 'Route not found'
+        message: `Route ${req.method} ${req.path} not found`,
+        availableRoutes: ['/', '/api/health', '/api/auth/*', '/api/user/*', '/api/bills/*', '/api/tenants/*']
     });
 });
 
