@@ -134,6 +134,60 @@ function setupEventListeners() {
         displayTenants(e.target.value, search);
     });
     
+    // Phone number validation - prevent typing more than 10 digits and only allow numbers
+    const phoneInput = document.getElementById('tenantPhone');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', (e) => {
+            // Remove any non-numeric characters
+            let value = e.target.value.replace(/[^0-9]/g, '');
+            // Limit to 10 digits
+            if (value.length > 10) {
+                value = value.slice(0, 10);
+            }
+            e.target.value = value;
+            
+            // Clear any existing error when user types
+            const errorDiv = phoneInput.nextElementSibling;
+            if (errorDiv && errorDiv.classList.contains('field-error')) {
+                errorDiv.remove();
+            }
+        });
+        
+        phoneInput.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const pastedData = (e.clipboardData || window.clipboardData).getData('text');
+            const numbers = pastedData.replace(/[^0-9]/g, '').slice(0, 10);
+            e.target.value = numbers;
+        });
+    }
+    
+    // Tenant name validation
+    const nameInput = document.getElementById('tenantName');
+    if (nameInput) {
+        nameInput.addEventListener('input', (e) => {
+            // Clear error when user types
+            const errorDiv = nameInput.nextElementSibling;
+            if (errorDiv && errorDiv.classList.contains('field-error')) {
+                errorDiv.remove();
+            }
+        });
+    }
+    
+    // Rent validation - prevent negative values
+    const rentInput = document.getElementById('tenantRent');
+    if (rentInput) {
+        rentInput.addEventListener('input', (e) => {
+            if (e.target.value < 0) {
+                e.target.value = 0;
+            }
+            // Clear error when user types
+            const errorDiv = rentInput.nextElementSibling;
+            if (errorDiv && errorDiv.classList.contains('field-error')) {
+                errorDiv.remove();
+            }
+        });
+    }
+    
     // Form submission
     const form = document.getElementById('tenantForm');
     form.addEventListener('submit', (e) => {
@@ -200,17 +254,95 @@ window.closeTenantModal = closeTenantModal;
 window.editTenant = editTenant;
 window.deleteTenant = deleteTenant;
 
+// Helper function to show field error below input
+function showFieldError(inputElement, message) {
+    // Remove any existing error for this field
+    const existingError = inputElement.nextElementSibling;
+    if (existingError && existingError.classList.contains('field-error')) {
+        existingError.remove();
+    }
+    
+    // Create and insert error message
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'field-error';
+    errorDiv.style.cssText = 'color: #dc2626; font-size: 0.875rem; margin-top: 0.25rem;';
+    errorDiv.textContent = message;
+    inputElement.parentNode.insertBefore(errorDiv, inputElement.nextSibling);
+    
+    // Add error styling to input
+    inputElement.style.borderColor = '#dc2626';
+}
+
+// Helper function to clear field error
+function clearFieldError(inputElement) {
+    const errorDiv = inputElement.nextElementSibling;
+    if (errorDiv && errorDiv.classList.contains('field-error')) {
+        errorDiv.remove();
+    }
+    inputElement.style.borderColor = '';
+}
+
 // Save tenant data
 async function saveTenantData() {
-    const name = document.getElementById('tenantName').value.trim();
-    const room = document.getElementById('tenantRoom').value.trim();
-    const phone = document.getElementById('tenantPhone').value.trim();
-    const email = document.getElementById('tenantEmail').value.trim();
-    const rent = parseFloat(document.getElementById('tenantRent').value);
-    const status = document.getElementById('tenantStatus').value;
+    const nameInput = document.getElementById('tenantName');
+    const roomInput = document.getElementById('tenantRoom');
+    const phoneInput = document.getElementById('tenantPhone');
+    const emailInput = document.getElementById('tenantEmail');
+    const rentInput = document.getElementById('tenantRent');
+    const statusInput = document.getElementById('tenantStatus');
     
-    if (!name || !room || !phone || !rent) {
-        showError('Please fill all required fields');
+    const name = nameInput.value.trim();
+    const room = roomInput.value.trim();
+    const phone = phoneInput.value.trim();
+    const email = emailInput.value.trim();
+    const rent = parseFloat(rentInput.value);
+    const status = statusInput.value;
+    
+    // Clear all previous errors
+    [nameInput, roomInput, phoneInput, emailInput, rentInput].forEach(clearFieldError);
+    
+    let hasError = false;
+    
+    // Validate tenant name
+    if (!name) {
+        showFieldError(nameInput, 'Tenant name is required.');
+        hasError = true;
+    } else if (name.length < 3) {
+        showFieldError(nameInput, 'Tenant name must be at least 3 characters long.');
+        hasError = true;
+    }
+    
+    // Validate room
+    if (!room) {
+        showFieldError(roomInput, 'Room number is required.');
+        hasError = true;
+    }
+    
+    // Validate phone
+    if (!phone) {
+        showFieldError(phoneInput, 'Phone number is required.');
+        hasError = true;
+    } else if (!/^[0-9]+$/.test(phone)) {
+        showFieldError(phoneInput, 'Phone number must contain only numeric digits (0–9).');
+        hasError = true;
+    } else if (phone.length > 10) {
+        showFieldError(phoneInput, 'Phone number must be exactly 10 digits. You entered more than 10 digits.');
+        hasError = true;
+    } else if (phone.length < 10) {
+        showFieldError(phoneInput, 'Phone number must be exactly 10 digits. You entered fewer digits.');
+        hasError = true;
+    }
+    
+    // Validate rent
+    if (!rent || isNaN(rent)) {
+        showFieldError(rentInput, 'Monthly rent is required and must be a valid number.');
+        hasError = true;
+    } else if (rent < 0) {
+        showFieldError(rentInput, 'Monthly rent cannot be negative.');
+        hasError = true;
+    }
+    
+    if (hasError) {
         return;
     }
     
@@ -241,6 +373,7 @@ async function saveTenantData() {
             const action = editingTenantId ? 'updated' : 'added';
             showSuccess(`Tenant ${action} successfully! ${name} (Room ${room})`);
         } else {
+            // Display the specific error message from backend
             showError(result.message || 'Failed to save tenant');
         }
     } catch (error) {

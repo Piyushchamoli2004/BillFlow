@@ -651,6 +651,7 @@ async function generateBill() {
         tenant: tenantData.name,  // For PDF generation
         tenantName: tenantData.name,  // For backend
         tenantId: tenantData._id || tenantData.id,  // For backend
+        tenantPhone: tenantData.phone || '',  // For WhatsApp
         roomNumber: typeof tenantData.room === 'string' ? tenantData.room.replace('Room ', '').trim() : tenantData.room,
         billDate: billDate,  // For PDF
         date: billDate,  // For backend
@@ -678,6 +679,7 @@ async function generateBill() {
             rate: waterSection ? parseFloat(waterSection.querySelectorAll('.calc-input')[2]?.value) || 0 : 0,
             amount: waterAmount
         },
+        rent: baseAmount,  // For WhatsApp message
         additionalCharges: additionalChargesArray,  // Array for PDF
         additionalChargesTotal,  // Total for summary
         total,
@@ -738,9 +740,23 @@ async function generateBill() {
                             submitBtn.innerHTML = originalText;
                             submitBtn.disabled = false;
                             showSuccess('PDF downloaded successfully!');
-                            setTimeout(() => {
-                                window.location.href = 'admin-dashboard.html';
-                            }, 1000);
+                            
+                            // Show WhatsApp option after PDF download
+                            setTimeout(async () => {
+                                const sendWhatsApp = await confirmAction({
+                                    title: '📲 Send via WhatsApp?',
+                                    message: `Would you like to send the bill details to ${billData.tenant} via WhatsApp?`,
+                                    confirmText: 'Send WhatsApp',
+                                    cancelText: 'Skip',
+                                    type: 'info'
+                                });
+                                
+                                if (sendWhatsApp) {
+                                    sendBillViaWhatsApp(billData);
+                                } else {
+                                    window.location.href = 'admin-dashboard.html';
+                                }
+                            }, 500);
                         })
                         .catch(error => {
                             console.error('❌ PDF generation failed:', error);
@@ -802,6 +818,79 @@ function saveDraft() {
     
     localStorage.setItem('billDraft', JSON.stringify(billData));
     showSuccess('Bill saved as draft successfully!');
+}
+
+// Send bill via WhatsApp
+function sendBillViaWhatsApp(billData) {
+    try {
+        // Extract phone number from tenantPhone or tenant object
+        let phoneNumber = '';
+        
+        // Try different possible locations for phone number
+        if (billData.tenantPhone) {
+            phoneNumber = billData.tenantPhone;
+        } else if (billData.phone) {
+            phoneNumber = billData.phone;
+        } else {
+            // Get from tenant select if still available
+            const tenantSelect = document.getElementById('tenantSelect');
+            if (tenantSelect && tenantSelect.value) {
+                try {
+                    const selectedTenant = JSON.parse(tenantSelect.value);
+                    phoneNumber = selectedTenant.phone || '';
+                } catch (e) {
+                    console.error('Error parsing tenant:', e);
+                }
+            }
+        }
+        
+        // Remove any non-numeric characters
+        const phone = phoneNumber.toString().replace(/[^0-9]/g, '');
+        
+        // Validate phone number
+        if (!phone || phone.length !== 10) {
+            showError('Invalid phone number for WhatsApp. Please ensure tenant has a valid 10-digit phone number.');
+            return;
+        }
+        
+        // Prepare message text
+        const message = `Hello ${billData.tenant},
+
+Your rent bill is ready.
+Bill Number: ${billData.billNumber}
+Date: ${new Date(billData.billDate || billData.date).toLocaleDateString()}
+
+Rent Amount: ₹${(billData.rent || billData.rentAmount || 0).toFixed(2)}
+Electricity: ₹${(billData.electricityAmount || billData.electricity?.amount || 0).toFixed(2)}
+Water: ₹${(billData.waterAmount || billData.water?.amount || 0).toFixed(2)}
+Other Charges: ₹${(billData.additionalChargesTotal || billData.otherCharges || 0).toFixed(2)}
+
+Total Amount: ₹${billData.total.toFixed(2)}
+
+Please make the payment at your earliest convenience.
+
+Thank you!`;
+        
+        // Encode message for URL
+        const encodedMessage = encodeURIComponent(message);
+        
+        // Create WhatsApp deep link (with +91 country code for India)
+        const whatsappUrl = `https://wa.me/91${phone}?text=${encodedMessage}`;
+        
+        // Open WhatsApp in new window
+        window.open(whatsappUrl, '_blank');
+        
+        showSuccess('Opening WhatsApp...');
+        
+        // Redirect to dashboard after a short delay
+        setTimeout(() => {
+            window.location.href = 'admin-dashboard.html';
+        }, 1500);
+        
+    } catch (error) {
+        console.error('Error sending WhatsApp message:', error);
+        showError('Failed to open WhatsApp');
+    }
 }
 
 // Download bill as PDF - Modern Design

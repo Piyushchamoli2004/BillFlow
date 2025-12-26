@@ -87,6 +87,74 @@ exports.getTenant = async (req, res) => {
 // @access  Private
 exports.createTenant = async (req, res) => {
     try {
+        // Custom validation for better error messages
+        const { name, phone, rentAmount, electricityBill, waterBill, maintenanceFee, otherCharges } = req.body;
+        
+        // Validate tenant name
+        if (!name || name.trim().length === 0) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Tenant name is required.'
+            });
+        }
+        
+        if (name.trim().length < 3) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Tenant name must be at least 3 characters long.'
+            });
+        }
+        
+        // Validate phone number if provided
+        if (phone) {
+            const phoneStr = phone.toString().trim();
+            
+            // Check if contains non-numeric characters
+            if (!/^[0-9]+$/.test(phoneStr)) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'Phone number must contain only numeric digits (0–9).'
+                });
+            }
+            
+            // Check exact length
+            if (phoneStr.length > 10) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'Phone number must be exactly 10 digits. You entered more than 10 digits.'
+                });
+            }
+            
+            if (phoneStr.length < 10) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'Phone number must be exactly 10 digits. You entered fewer digits.'
+                });
+            }
+        }
+        
+        // Validate charges if provided
+        const charges = { rentAmount, electricityBill, waterBill, maintenanceFee, otherCharges };
+        for (const [key, value] of Object.entries(charges)) {
+            if (value !== undefined && value !== null && value !== '') {
+                // Check if numeric
+                if (isNaN(value)) {
+                    return res.status(400).json({
+                        status: 'error',
+                        message: 'Charges must be valid numbers.'
+                    });
+                }
+                
+                // Check if negative
+                if (Number(value) < 0) {
+                    return res.status(400).json({
+                        status: 'error',
+                        message: 'Charges cannot be negative.'
+                    });
+                }
+            }
+        }
+        
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({
@@ -136,6 +204,76 @@ exports.createTenant = async (req, res) => {
 // @access  Private
 exports.updateTenant = async (req, res) => {
     try {
+        // Custom validation for better error messages
+        const { name, phone, rentAmount, electricityBill, waterBill, maintenanceFee, otherCharges } = req.body;
+        
+        // Validate tenant name if provided
+        if (name !== undefined) {
+            if (!name || name.trim().length === 0) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'Tenant name is required.'
+                });
+            }
+            
+            if (name.trim().length < 3) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'Tenant name must be at least 3 characters long.'
+                });
+            }
+        }
+        
+        // Validate phone number if provided
+        if (phone !== undefined && phone !== '') {
+            const phoneStr = phone.toString().trim();
+            
+            // Check if contains non-numeric characters
+            if (!/^[0-9]+$/.test(phoneStr)) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'Phone number must contain only numeric digits (0–9).'
+                });
+            }
+            
+            // Check exact length
+            if (phoneStr.length > 10) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'Phone number must be exactly 10 digits. You entered more than 10 digits.'
+                });
+            }
+            
+            if (phoneStr.length < 10) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'Phone number must be exactly 10 digits. You entered fewer digits.'
+                });
+            }
+        }
+        
+        // Validate charges if provided
+        const charges = { rentAmount, electricityBill, waterBill, maintenanceFee, otherCharges };
+        for (const [key, value] of Object.entries(charges)) {
+            if (value !== undefined && value !== null && value !== '') {
+                // Check if numeric
+                if (isNaN(value)) {
+                    return res.status(400).json({
+                        status: 'error',
+                        message: 'Charges must be valid numbers.'
+                    });
+                }
+                
+                // Check if negative
+                if (Number(value) < 0) {
+                    return res.status(400).json({
+                        status: 'error',
+                        message: 'Charges cannot be negative.'
+                    });
+                }
+            }
+        }
+        
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({

@@ -92,6 +92,80 @@ exports.getBill = async (req, res) => {
 // @access  Private
 exports.createBill = async (req, res) => {
     try {
+        // Custom validation for better error messages
+        const { tenantName, tenantPhone, rentAmount, electricityBill, waterBill, maintenanceFee, otherCharges } = req.body;
+        
+        // Validate tenant name
+        if (!tenantName || tenantName.trim().length === 0) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Tenant name is required.'
+            });
+        }
+        
+        if (tenantName.trim().length < 3) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Tenant name must be at least 3 characters long.'
+            });
+        }
+        
+        // Validate phone number if provided
+        if (tenantPhone) {
+            const phoneStr = tenantPhone.toString().trim();
+            
+            // Check if contains non-numeric characters
+            if (!/^[0-9]+$/.test(phoneStr)) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'Phone number must contain only numeric digits (0–9).'
+                });
+            }
+            
+            // Check exact length
+            if (phoneStr.length > 10) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'Phone number must be exactly 10 digits. You entered more than 10 digits.'
+                });
+            }
+            
+            if (phoneStr.length < 10) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'Phone number must be exactly 10 digits. You entered fewer digits.'
+                });
+            }
+        }
+        
+        // Validate that all charge fields are provided and valid
+        const chargeFields = { rentAmount, electricityBill, waterBill, maintenanceFee, otherCharges };
+        for (const [key, value] of Object.entries(chargeFields)) {
+            // Check if empty/missing
+            if (value === undefined || value === null || value === '') {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'All charge fields are required.'
+                });
+            }
+            
+            // Check if numeric
+            if (isNaN(value)) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'Charges must be valid numbers.'
+                });
+            }
+            
+            // Check if negative
+            if (Number(value) < 0) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'Charges cannot be negative.'
+                });
+            }
+        }
+        
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({

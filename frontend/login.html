@@ -819,32 +819,37 @@
                     return;
                 }
                 
-                // Check if user exists
-                const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-                const user = users.find(u => u.email === email);
+                const sendBtn = document.getElementById('sendResetBtn');
+                sendBtn.disabled = true;
+                sendBtn.textContent = 'Sending...';
                 
-                if (!user) {
-                    // Security: Don't reveal if email exists
-                    showSuccess('If an account exists with this email, a reset code has been sent.');
-                    setTimeout(() => document.body.removeChild(modal), 2000);
-                    return;
+                try {
+                    // Call API to send reset email
+                    const response = await fetch('http://localhost:5000/api/auth/forgot-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        showSuccess(result.message || 'Password reset link has been sent to your email.');
+                        setTimeout(() => document.body.removeChild(modal), 2000);
+                        
+                        // Store email for reset form
+                        localStorage.setItem('resetEmail', email);
+                    } else {
+                        showError(result.message || 'Failed to send reset email');
+                        sendBtn.disabled = false;
+                        sendBtn.textContent = 'Send Reset Code';
+                    }
+                } catch (error) {
+                    console.error('Forgot password error:', error);
+                    showError('Network error. Make sure backend server is running.');
+                    sendBtn.disabled = false;
+                    sendBtn.textContent = 'Send Reset Code';
                 }
-                
-                // Generate 6-digit reset code
-                const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
-                const resetExpiry = Date.now() + (15 * 60 * 1000); // 15 minutes
-                
-                // Save reset code
-                const resetData = {
-                    email,
-                    code: resetCode,
-                    expiresAt: resetExpiry
-                };
-                localStorage.setItem('passwordReset', JSON.stringify(resetData));
-                
-                // Show code (in production, send via email)
-                document.body.removeChild(modal);
-                showResetCodeModal(resetCode, email);
             };
             
             // Click outside to close

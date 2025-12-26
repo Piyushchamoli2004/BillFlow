@@ -48,9 +48,44 @@ const loginValidation = [
         .withMessage('Password is required')
 ];
 
+const forgotPasswordValidation = [
+    body('email')
+        .trim()
+        .notEmpty()
+        .withMessage('Email is required')
+        .isEmail()
+        .withMessage('Please provide a valid email')
+        .normalizeEmail()
+];
+
+const resetPasswordValidation = [
+    body('email')
+        .trim()
+        .notEmpty()
+        .withMessage('Email is required')
+        .isEmail()
+        .withMessage('Please provide a valid email')
+        .normalizeEmail(),
+    body('resetCode')
+        .trim()
+        .notEmpty()
+        .withMessage('Reset code is required')
+        .isLength({ min: 6, max: 6 })
+        .withMessage('Reset code must be 6 digits')
+        .isNumeric()
+        .withMessage('Reset code must contain only numbers'),
+    body('newPassword')
+        .notEmpty()
+        .withMessage('New password is required')
+        .isLength({ min: 6 })
+        .withMessage('Password must be at least 6 characters')
+];
+
 // Routes
 router.post('/register', registerValidation, authController.register);
 router.post('/login', loginValidation, authController.login);
 router.post('/logout', authController.logout);
+router.post('/forgot-password', forgotPasswordValidation, authController.forgotPassword);
+router.post('/reset-password', resetPasswordValidation, authController.resetPassword);
 
 module.exports = router;
