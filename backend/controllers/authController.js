@@ -214,6 +214,8 @@ exports.forgotPassword = async (req, res) => {
         try {
             await emailUtils.sendPasswordResetEmail(user.email, user.name, resetCode);
             
+            console.log(`✅ Reset code sent to ${user.email}: ${resetCode}`);
+            
             res.status(200).json({
                 status: 'success',
                 message: 'Password reset link has been sent to your email.'
@@ -221,13 +223,20 @@ exports.forgotPassword = async (req, res) => {
         } catch (emailError) {
             console.error('Email sending failed:', emailError);
             
-            // Clear reset token if email fails
-            user.resetPasswordToken = undefined;
-            user.resetPasswordExpire = undefined;
-            await user.save();
+            // Log reset code to console for demo purposes
+            console.log(`⚠️ EMAIL FAILED - Reset code for ${user.email}: ${resetCode}`);
+            console.log('Check this code in server logs if email service is not configured');
             
-            return res.status(500).json({
-                status: 'error',
+            // Don't clear reset token - still allow reset with code
+            // user.resetPasswordToken = undefined;
+            // user.resetPasswordExpire = undefined;
+            // await user.save();
+            
+            // Return success anyway for demo (in production, return error)
+            return res.status(200).json({
+                status: 'success',
+                message: 'Password reset code generated. Check server logs for code (email service not configured).'
+            });
                 message: 'Failed to send reset email. Please try again later.'
             });
         }

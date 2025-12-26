@@ -646,6 +646,15 @@ async function generateBill() {
     const dueDateObj = new Date(billDateObj);
     dueDateObj.setDate(dueDateObj.getDate() + 15);
     
+    // Debug: Log tenant data before creating billData
+    console.log('🔍 Tenant data before creating bill:', {
+        name: tenantData.name,
+        phone: tenantData.phone,
+        room: tenantData.room,
+        id: tenantData._id || tenantData.id,
+        fullTenantData: tenantData
+    });
+    
     const billData = {
         billNumber,
         tenant: tenantData.name,  // For PDF generation
