@@ -1,10 +1,10 @@
 [build]
   # Frontend doesn't need a build command - it's static HTML/CSS/JS
   command = "echo 'Static frontend - no build required'"
-  publish = "."
+  publish = "frontend"
   
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "20"
 
 # Redirect API calls to your backend server
 [[redirects]]
