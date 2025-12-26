@@ -133,13 +133,13 @@ git push -u origin main
    
    **WRONG ❌:**
    ```
-   mongodb+srv://billflow:X7k9mP2qR8n5Tz4@cluster0.xxxxx.mongodb.net/
+   mongodb+srv://billflow:<password>@cluster0.xxxxx.mongodb.net/
    ```
    (Missing database name and query parameters!)
    
    **CORRECT ✅:**
    ```
-   mongodb+srv://billflow:X7k9mP2qR8n5Tz4@cluster0.xxxxx.mongodb.net/billflow?retryWrites=true&w=majority
+   mongodb+srv://billflow:<password>@cluster0.xxxxx.mongodb.net/billflow?retryWrites=true&w=majority
    ```
    
    **Format breakdown:**

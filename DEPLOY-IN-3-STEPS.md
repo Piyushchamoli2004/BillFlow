@@ -87,7 +87,7 @@
 6. Click "Connect" → "Connect your application"
 7. Copy connection string like:
    ```
-   mongodb+srv://billflow:PASSWORD@cluster0.xxxxx.mongodb.net/billflow
+   mongodb+srv://billflow:<password>@cluster0.xxxxx.mongodb.net/billflow
    ```
 8. Go back to Render → Paste this in `MONGODB_URI` envi
 **Note:** Manual drops require re-uploading for updates.

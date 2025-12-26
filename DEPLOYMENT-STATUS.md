@@ -89,7 +89,7 @@ Your backend needs a database!
    mongodb+srv://billflow:<password>@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority
    ```
 4. Replace `<password>` with your actual password
-5. Add database name: `mongodb+srv://billflow:PASSWORD@cluster0.xxxxx.mongodb.net/billflow?retryWrites=true&w=majority`
+5. Add database name: `mongodb+srv://billflow:<password>@cluster0.xxxxx.mongodb.net/billflow?retryWrites=true&w=majority`
 
 #### 2.6: Update Render
 1. Go back to Render dashboard
