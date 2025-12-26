@@ -59,19 +59,16 @@ class API {
 
             const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
             
-            // Check if response is ok before parsing
+            // Parse response first
+            const result = await response.json();
+            
+            // Check if response is ok
             if (!response.ok) {
-                let errorMessage = 'API request failed';
-                try {
-                    const result = await response.json();
-                    errorMessage = result.message || errorMessage;
-                } catch (e) {
-                    errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-                }
+                // Return error with backend message
+                const errorMessage = result.message || `HTTP ${response.status}: ${response.statusText}`;
                 throw new Error(errorMessage);
             }
             
-            const result = await response.json();
             return result;
         } catch (error) {
             console.error('API Error:', error);

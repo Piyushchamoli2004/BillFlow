@@ -823,14 +823,18 @@ function saveDraft() {
 // Send bill via WhatsApp
 function sendBillViaWhatsApp(billData) {
     try {
+        console.log('📱 WhatsApp function called with billData:', billData);
+        
         // Extract phone number from tenantPhone or tenant object
         let phoneNumber = '';
         
         // Try different possible locations for phone number
         if (billData.tenantPhone) {
             phoneNumber = billData.tenantPhone;
+            console.log('Found phone in billData.tenantPhone:', phoneNumber);
         } else if (billData.phone) {
             phoneNumber = billData.phone;
+            console.log('Found phone in billData.phone:', phoneNumber);
         } else {
             // Get from tenant select if still available
             const tenantSelect = document.getElementById('tenantSelect');
@@ -838,20 +842,28 @@ function sendBillViaWhatsApp(billData) {
                 try {
                     const selectedTenant = JSON.parse(tenantSelect.value);
                     phoneNumber = selectedTenant.phone || '';
+                    console.log('Found phone in tenant select:', phoneNumber);
                 } catch (e) {
                     console.error('Error parsing tenant:', e);
                 }
             }
         }
         
+        console.log('Raw phone number:', phoneNumber);
+        
         // Remove any non-numeric characters
-        const phone = phoneNumber.toString().replace(/[^0-9]/g, '');
+        const phone = phoneNumber ? phoneNumber.toString().replace(/[^0-9]/g, '') : '';
+        
+        console.log('Cleaned phone number:', phone, 'Length:', phone.length);
         
         // Validate phone number
         if (!phone || phone.length !== 10) {
+            console.error('❌ Invalid phone:', phone, 'Length:', phone.length);
             showError('Invalid phone number for WhatsApp. Please ensure tenant has a valid 10-digit phone number.');
             return;
         }
+        
+        console.log('✅ Valid phone number:', phone);
         
         // Prepare message text
         const message = `Hello ${billData.tenant},

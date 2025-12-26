@@ -824,8 +824,13 @@
                 sendBtn.textContent = 'Sending...';
                 
                 try {
+                    // Detect API URL based on environment
+                    const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                        ? 'http://localhost:3000/api/auth/forgot-password'
+                        : '/api/auth/forgot-password';  // Uses Netlify redirect to backend
+                    
                     // Call API to send reset email
-                    const response = await fetch('http://localhost:5000/api/auth/forgot-password', {
+                    const response = await fetch(apiUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email })
@@ -846,7 +851,7 @@
                     }
                 } catch (error) {
                     console.error('Forgot password error:', error);
-                    showError('Network error. Make sure backend server is running.');
+                    showError('Failed to send reset email. Please try again.');
                     sendBtn.disabled = false;
                     sendBtn.textContent = 'Send Reset Code';
                 }
@@ -1080,14 +1085,22 @@
                         // Record successful attempt
                         loginAttempts.recordAttempt(email, true);
                         
-                        // Save user data
+                        // Get existing userData to preserve propertyName and propertyAddress
+                        const existingUserData = JSON.parse(localStorage.getItem('userData') || '{}');
+                        const existingProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+                        
+                        // Save user data while preserving profile settings
                         const userData = result.data.user;
                         localStorage.setItem('userData', JSON.stringify({
                             id: userData.id,
                             name: userData.name || '',
                             email: userData.email,
                             phone: userData.phone || '',
-                            organization: userData.organization || ''
+                            organization: userData.organization || '',
+                            // Preserve existing profile data
+                            propertyName: existingUserData.propertyName || existingProfile.propertyName || '',
+                            propertyAddress: existingUserData.propertyAddress || existingProfile.propertyAddress || '',
+                            role: existingUserData.role || existingProfile.role || 'Administrator'
                         }));
                         
                         // Show success message

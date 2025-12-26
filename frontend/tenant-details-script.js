@@ -378,7 +378,8 @@ async function saveTenantData() {
         }
     } catch (error) {
         console.error('Error saving tenant:', error);
-        showError('Error saving tenant');
+        // Display the actual error message from API
+        showError(error.message || 'Error saving tenant');
     }
 }
 
