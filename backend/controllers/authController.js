@@ -237,8 +237,6 @@ exports.forgotPassword = async (req, res) => {
                 status: 'success',
                 message: 'Password reset code generated. Check server logs for code (email service not configured).'
             });
-                message: 'Failed to send reset email. Please try again later.'
-            });
         }
     } catch (error) {
         console.error('Forgot Password Error:', error);
