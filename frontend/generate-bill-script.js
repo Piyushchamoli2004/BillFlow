@@ -185,12 +185,13 @@ async function loadTenants() {
         // Add tenant options
         tenants.forEach(tenant => {
             const option = document.createElement('option');
-            // Store full tenant data as JSON string
+            // Store full tenant data as JSON string INCLUDING PHONE
             option.value = JSON.stringify({
                 _id: tenant._id,
                 name: tenant.name,
                 room: tenant.roomNumber,
-                email: tenant.email
+                email: tenant.email,
+                phone: tenant.phone || ''
             });
             option.textContent = `${tenant.name} (Room ${tenant.roomNumber})`;
             tenantSelect.appendChild(option);
