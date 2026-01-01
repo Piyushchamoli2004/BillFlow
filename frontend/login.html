@@ -829,6 +829,9 @@
                         ? 'http://localhost:3000/api/auth/forgot-password'
                         : '/api/auth/forgot-password';  // Uses Netlify redirect to backend
                     
+                    console.log('🔄 Sending forgot password request to:', apiUrl);
+                    console.log('📧 Email:', email);
+                    
                     // Call API to send reset email
                     const response = await fetch(apiUrl, {
                         method: 'POST',
@@ -836,7 +839,11 @@
                         body: JSON.stringify({ email })
                     });
                     
+                    console.log('📡 Response status:', response.status);
+                    console.log('📡 Response ok:', response.ok);
+                    
                     const result = await response.json();
+                    console.log('📦 Response data:', result);
                     
                     if (result.status === 'success') {
                         showSuccess(result.message || 'Password reset link has been sent to your email.');
@@ -845,12 +852,15 @@
                         // Store email for reset form
                         localStorage.setItem('resetEmail', email);
                     } else {
+                        console.error('❌ Error status from backend:', result);
                         showError(result.message || 'Failed to send reset email');
                         sendBtn.disabled = false;
                         sendBtn.textContent = 'Send Reset Code';
                     }
                 } catch (error) {
-                    console.error('Forgot password error:', error);
+                    console.error('❌ Forgot password error:', error);
+                    console.error('❌ Error type:', error.name);
+                    console.error('❌ Error message:', error.message);
                     showError('Failed to send reset email. Please try again.');
                     sendBtn.disabled = false;
                     sendBtn.textContent = 'Send Reset Code';
